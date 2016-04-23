@@ -15,7 +15,7 @@ namespace PoolSharp
 	public interface IPool<T> : IDisposable
 	{
 		/// <summary>
-		/// Returns an item from the pool.
+		/// Gets an item from the pool.
 		/// </summary>
 		/// <remarks>
 		/// <para>If the pool is empty when the request is made, a new item is instantiated and returned.</para>

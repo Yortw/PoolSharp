@@ -28,6 +28,7 @@ namespace PoolSharp
 		/// <remarks>
 		/// <para>Can be null if no re-initialisation is required, or if the client is expected to perform it's own initialisation.</para>
 		/// <para>This action is not performed against newly created items, it is a *re*-initialisation, not an initialisation action.</para>
+		/// <para>The action proided may be called from a background thread. If the pooled object has thread affinity, invoking to the appropriate thread may be required within the action itself.</para>
 		/// </remarks>
 		public Action<T> ReinitializeObject { get; set; }
 		/// <summary>

@@ -15,8 +15,9 @@ namespace PoolSharp
 		/// </summary>
 		Return = 0,
 		/// <summary>
-		/// <para>Items are re-initialised asynchronously before being returned to the pool.</para>
+		/// <para>Items are re-initialised asynchronously before being returned to the pool. A single long running thread is used to re-initialise items before returning them to the pool. The use of a single thread prevents thread pool overloading when many/very busy pools are used, though can mean re-initialisation and returning items to the pool can take longer as the re-initialisation is effectively serialised.</para>
 		/// <para>This minimises time spent waiting on the pool either taking or returning items, but risks more allocations if items are requested from the pool while returned items are still being re-initialised. Recommended if re-initalisation is time consuming.</para>
+		/// <para>Note: On platforms (such as WinRT/UWP) where threads are not exposed by .Net runtime and only <see cref="System.Threading.Tasks.Task"/> is available, this effectively consumes a threadpool thread for the life of each pool (or slighlty longer). On those platforms we recommend using another option unless you have specific reason to use this one, particularly if you have many different pools in use.</para>
 		/// </summary>
 		AsyncReturn,
 		/// <summary>

@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>PoolSharp</id>
+        <version>1.0.0</version>
+        <title>PoolSharp</title>
+        <authors>Yortw</authors>
+        <owners>Troy Willmot</owners>
+        <licenseUrl>https://github.com/Yortw/PoolSharp/blob/master/LICENSE.md</licenseUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>PoolSharp is a simple, light weight, thread safe object pool.</description>
+        <summary />
+        <tags>object pool sharp winrt uwp net40 ios android xamarin portable</tags>
+    </metadata>
+    <files>
+        <file src="PoolSharp.Android\bin\Release\PoolSharp.dll" target="lib\MonoAndroid\PoolSharp.dll" />
+        <file src="PoolSharp.Android\bin\Release\PoolSharp.pdb" target="lib\MonoAndroid\PoolSharp.pdb" />
+        <file src="PoolSharp.Android\bin\Release\PoolSharp.XML" target="lib\MonoAndroid\PoolSharp.XML" />
+        <file src="PoolSharp.Net40\bin\Release\PoolSharp.dll" target="lib\net40\PoolSharp.dll" />
+        <file src="PoolSharp.Net40\bin\Release\PoolSharp.pdb" target="lib\net40\PoolSharp.pdb" />
+        <file src="PoolSharp.Net40\bin\Release\PoolSharp.XML" target="lib\net40\PoolSharp.XML" />
+        <file src="PoolSharp.Android\bin\Release\PoolSharp.dll" target="lib\netcore451\PoolSharp.dll" />
+        <file src="PoolSharp.WinRT\bin\Release\PoolSharp.pdb" target="lib\netcore451\PoolSharp.pdb" />
+        <file src="PoolSharp.Android\bin\Release\PoolSharp.XML" target="lib\netcore451\PoolSharp.XML" />
+        <file src="PoolSharp.Bait\bin\Release\PoolSharp.dll" target="lib\portable-net4+sl5+wp8+win8\PoolSharp.dll" />
+        <file src="PoolSharp.Bait\bin\Release\PoolSharp.pdb" target="lib\portable-net4+sl5+wp8+win8\PoolSharp.pdb" />
+        <file src="PoolSharp.Bait\bin\Release\PoolSharp.XML" target="lib\portable-net4+sl5+wp8+win8\PoolSharp.XML" />
+        <file src="PoolSharp.iOS\bin\Release\PoolSharp.dll" target="lib\Xamarin.iOS10\PoolSharp.dll" />
+        <file src="PoolSharp.iOS\bin\Release\PoolSharp.pdb" target="lib\Xamarin.iOS10\PoolSharp.pdb" />
+        <file src="PoolSharp.iOS\bin\Release\PoolSharp.XML" target="lib\Xamarin.iOS10\PoolSharp.XML" />
+    </files>
+</package>

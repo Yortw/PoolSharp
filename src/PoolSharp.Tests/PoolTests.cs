@@ -173,6 +173,22 @@ namespace PoolSharp.Tests
 			Assert.AreNotEqual(itemId, item.Id);
 		}
 
+		[TestMethod]
+		public void Pool_Add_ReinitialisesItemOnBackgroundThread()
+		{
+			using (var pool = GetPool(1, PooledItemInitialization.AsyncReturn))
+			{
+				var item = pool.Take();
+				Guid itemId = item.Id;
+				pool.Add(item);
+				System.Threading.Thread.Sleep(500);
+				Assert.AreNotEqual(itemId, item.Id);
+				Assert.AreNotEqual(System.Threading.Thread.CurrentThread.ManagedThreadId, item.ResetByThreadId);
+				var item2 = pool.Take();
+				Assert.AreEqual(item, item2);
+			}
+		}
+
 		#endregion
 
 		#region Dispose Tests
@@ -370,6 +386,7 @@ namespace PoolSharp.Tests
 				{
 					pi.Id = Guid.NewGuid();
 					pi.Date = DateTime.Now;
+					pi.ResetByThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
 				}
 			};
 
@@ -392,6 +409,7 @@ namespace PoolSharp.Tests
 				{
 					pi.Id = Guid.NewGuid();
 					pi.Date = DateTime.Now;
+					pi.ResetByThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
 				}
 			};
 
@@ -409,6 +427,7 @@ namespace PoolSharp.Tests
 				{
 					item.Value.Id = Guid.NewGuid();
 					item.Value.Date = DateTime.Now;
+					item.Value.ResetByThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
 				}
 			};
 

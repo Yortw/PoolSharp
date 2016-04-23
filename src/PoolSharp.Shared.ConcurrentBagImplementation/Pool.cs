@@ -12,7 +12,7 @@ namespace PoolSharp
 	/// <remarks>
 	/// <para>This pool does not block when a new item is requested and the pool is empty, instead a new will be allocated and returned.</para>
 	/// <para>By default the pool starts empty and items are allocated as needed. The <see cref="Expand()"/> method can be used to pre-load the pool if required./para>
-	/// <para>Objects returned to the pool are taken on a first come first serve basis. If the pool is full when an object is returned, it is ignored (and will be garbage collected if there are no other references to it). In this case, if the item implements <see cref="IDisposable"/> the pool will ensure it is disposed before being 'ignored'.</para>
+	/// <para>Objects returned to the pool are added on a first come first serve basis. If the pool is full when an object is returned, it is ignored (and will be garbage collected if there are no other references to it). In this case, if the item implements <see cref="IDisposable"/> the pool will ensure the item is disposed before being 'ignored'.</para>
 	/// <para>The pool makes a best effort attempt to avoid going over the specified <see cref="PoolPolicy{T}.MaximumPoolSize"/>, but does not strictly enforce it. Under certain multi-threaded scenarios it's possible for a few items more than the maximum to be kept in the pool.</para>
 	/// <para>Disposing the pool will also dispose all objects currently in the pool, if they support <see cref="IDisposable"/>.</para>
 	/// </remarks>
@@ -33,6 +33,10 @@ namespace PoolSharp
 		private bool _IsDisposed;
 
 		private PropertyInfo _PooledObjectValueProperty;
+
+#if SUPPORTS_THREADS
+				System.Threading.Thread _ReinitialiseThread; 
+#endif
 
 		#endregion
 
@@ -58,7 +62,14 @@ namespace PoolSharp
 			if (_PoolPolicy.InitializationPolicy == PooledItemInitialization.AsyncReturn)
 			{
 				_ItemsToInitialise = new System.Collections.Concurrent.BlockingCollection<T>();
-				//TODO: Start initialise thread.
+#if SUPPORTS_THREADS
+				_ReinitialiseThread = new System.Threading.Thread(this.BackgroundReinitialise);
+				_ReinitialiseThread.Name = this.GetType().FullName + " Background Reinitialise";
+				_ReinitialiseThread.IsBackground = true;
+				_ReinitialiseThread.Start();
+#else
+				System.Threading.Tasks.Task.Factory.StartNew(this.BackgroundReinitialise, System.Threading.Tasks.TaskCreationOptions.LongRunning);
+#endif
 			}
 		}
 
@@ -67,7 +78,7 @@ namespace PoolSharp
 		#region IPool<T> Members
 
 		/// <summary>
-		/// Returns an item from the pool.
+		/// Gets an item from the pool.
 		/// </summary>
 		/// <remarks>
 		/// <para>If the pool is empty when the request is made, a new item is instantiated and returned. Otherwise an instance from the pool will be used.</para>
@@ -230,8 +241,11 @@ namespace PoolSharp
 
 				if (_IsPooledTypeDisposable)
 				{
-					foreach (var item in _Pool)
+					T item;
+
+					while (!_Pool.IsEmpty)
 					{
+						_Pool.TryTake(out item);
 						SafeDispose(item);
 					}
 				}
@@ -241,6 +255,36 @@ namespace PoolSharp
 		#endregion
 
 		#region Private Methods
+
+		private void BackgroundReinitialise()
+		{
+			T item = default(T);
+			while (!_ItemsToInitialise.IsCompleted)
+			{
+				try
+				{
+					item = _ItemsToInitialise.Take();
+				}
+				catch (InvalidOperationException)
+				{
+					if (_ItemsToInitialise.IsCompleted) return;
+				}
+
+				if (item != null)
+				{
+					if (_IsDisposed)
+						SafeDispose(item);
+					else
+					{
+						if (_PoolPolicy.ReinitializeObject != null)
+							_PoolPolicy.ReinitializeObject(item);
+
+						if (_PoolPolicy.MaximumPoolSize <= 0 || _Pool.Count < _PoolPolicy.MaximumPoolSize)
+							_Pool.Add(item);
+					}
+				}
+			}
+		}
 
 		private void SafeAddToReinitialiseQueue(T pooledObject)
 		{
@@ -343,6 +387,6 @@ namespace PoolSharp
 		}
 #endif
 
-#endregion
+		#endregion
 	}
 }

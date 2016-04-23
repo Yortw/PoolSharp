@@ -17,5 +17,6 @@ namespace PoolSharp.Tests
 
 		public Guid Id { get; set; } = Guid.NewGuid();
 		public DateTime Date { get; set; } = DateTime.Now;
+		public int ResetByThreadId { get; set; }
 	}
 }
