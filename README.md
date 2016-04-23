@@ -29,8 +29,7 @@ Install the Nuget package like this;
     PM> Install-Package PoolSharp
 ```
 
-[![NuGet Status](http://img.shields.io/nuget/v/PoolSharp.svg?style=flat)](https://www.nuget.org/packages/PoolSharp)
-[![Nuget](https://img.shields.io/nuget/dt/PoolSharp.svg)](https://www.nuget.org/packages/PoolSharp)
+[![NuGet Badge](https://buildstats.info/nuget/PoolSharp)](https://www.nuget.org/packages/PoolSharp/)
 
 Or reference the PoolSharp.dll assembly that matches your app's platform.
 
