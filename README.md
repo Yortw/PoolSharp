@@ -18,7 +18,7 @@ Currently;
 * UWP 10+ (Windows 10 Universal Programs)
 
 ## Build Status
-[![Build status](https://ci.appveyor.com/api/projects/status/f4e33as09yx0lsn4?svg=true)](https://ci.appveyor.com/project/Yortw/poolsharp)
+[![Build status](https://ci.appveyor.com/api/projects/status/88t4uo6hvxfiqbe0?svg=true)](https://ci.appveyor.com/project/Yortw/poolsharp)
 
 ## How do I use PoolSharp?
 *We got your samples right here*
@@ -34,7 +34,7 @@ Install the Nuget package like this;
 
 Or reference the PoolSharp.dll assembly that matches your app's platform.
 
-### Creating a pool.
+### Creating a Pool
 Create a PoolPolicy<T> instance to configure options and behaviour for the pool, T is the type of item being pooled.
 Create a new Pool<T> instance passing the pool policy you created. Pool policies can be re-used across pools so long as the assigned Function and Action delegates are thread-safe.
 
@@ -54,16 +54,6 @@ Create a new Pool<T> instance passing the pool policy you created. Pool policies
     	ReinitializeObject = (sb) => sb.Clear()
     };
     
-    //Now create a new pool using the policy.
-	IPool<System.Text.StringBuilder> pool = new Pool<System.Text.StringBuilder>(policy);
-
-    //Retrieve an instance from the pool
-    var stringbuilder = pool.Take();
- 
-    //Do something with the stringbuilder   
-    
-    //Return the string builder to the pool
-    pool.Add(stringbuilder);    
 ```
 
 ### Using a Pool
