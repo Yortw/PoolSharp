@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using System.Threading;
 
 namespace PoolSharp
 {
@@ -11,7 +12,7 @@ namespace PoolSharp
 	/// </summary>
 	/// <remarks>
 	/// <para>This pool does not block when a new item is requested and the pool is empty, instead a new will be allocated and returned.</para>
-	/// <para>By default the pool starts empty and items are allocated as needed. The <see cref="Expand()"/> method can be used to pre-load the pool if required./para>
+	/// <para>By default the pool starts empty and items are allocated as needed. The <see cref="Expand()"/> method can be used to pre-load the pool if required.</para>
 	/// <para>Objects returned to the pool are added on a first come first serve basis. If the pool is full when an object is returned, it is ignored (and will be garbage collected if there are no other references to it). In this case, if the item implements <see cref="IDisposable"/> the pool will ensure the item is disposed before being 'ignored'.</para>
 	/// <para>The pool makes a best effort attempt to avoid going over the specified <see cref="PoolPolicy{T}.MaximumPoolSize"/>, but does not strictly enforce it. Under certain multi-threaded scenarios it's possible for a few items more than the maximum to be kept in the pool.</para>
 	/// <para>Disposing the pool will also dispose all objects currently in the pool, if they support <see cref="IDisposable"/>.</para>
@@ -31,6 +32,8 @@ namespace PoolSharp
 		private readonly bool _IsPooledTypeDisposable;
 		private readonly bool _IsPooledTypeWrapped;
 		private bool _IsDisposed;
+
+		private long _PoolInstancesCount;
 
 		private PropertyInfo _PooledObjectValueProperty;
 
@@ -94,6 +97,8 @@ namespace PoolSharp
 
 			if (_Pool.TryTake(out retVal))
 			{
+				Interlocked.Decrement(ref _PoolInstancesCount);
+
 				if (_PoolPolicy.InitializationPolicy == PooledItemInitialization.Take && _PoolPolicy.ReinitializeObject != null)
 					_PoolPolicy.ReinitializeObject(retVal);
 			}
@@ -127,14 +132,15 @@ namespace PoolSharp
 
 			if (ShouldReturnToPool(value))
 			{
-				if (_PoolPolicy.InitializationPolicy == PooledItemInitialization.Take || _PoolPolicy.ReinitializeObject == null)
-					_Pool.Add(value);
-				else if (_PoolPolicy.InitializationPolicy == PooledItemInitialization.AsyncReturn)
+				if (_PoolPolicy.InitializationPolicy == PooledItemInitialization.AsyncReturn)
 					SafeAddToReinitialiseQueue(value);
-				else if (_PoolPolicy.InitializationPolicy == PooledItemInitialization.Return)
+				else
 				{
-					_PoolPolicy.ReinitializeObject(value);
+					if (_PoolPolicy.InitializationPolicy == PooledItemInitialization.Return && _PoolPolicy.ReinitializeObject != null)
+						_PoolPolicy.ReinitializeObject(value);
+
 					_Pool.Add(value);
+					Interlocked.Increment(ref _PoolInstancesCount);
 				}
 			}
 			else
@@ -160,7 +166,7 @@ namespace PoolSharp
 		/// <param name="increment">The maximum number of items to pre-allocate and add to the pool.</param>
 		/// <remarks>
 		/// <para>This method is 'thread safe', though it is possible under certain race conditons for the pool to go beyond it's configured maximum size by a few items.</para>
-		/// <para>If <paramref name="incremenet"/> is zero or less the method returns without doing anything</para>
+		/// <para>If <paramref name="increment"/> is zero or less the method returns without doing anything</para>
 		/// </remarks>
 		/// <exception cref="System.ObjectDisposedException">Thrown if this method is called on a disposed pool.</exception>
 		public void Expand(int increment)
@@ -170,11 +176,13 @@ namespace PoolSharp
 			if (increment <= 0) return;
 
 			int createdCount = 0;
-			while (createdCount < increment && (_Pool.Count < _PoolPolicy.MaximumPoolSize || _PoolPolicy.MaximumPoolSize <= 0))
+			while (createdCount < increment && !IsPoolFull())
 			{
 				_Pool.Add(_PoolPolicy.Factory(this));
+				Interlocked.Increment(ref _PoolInstancesCount);
 				createdCount++;
 			}
+		
 		}
 
 		#endregion
@@ -182,7 +190,7 @@ namespace PoolSharp
 		#region Public Methods
 
 		/// <summary>
-		/// Throws a <see cref="ObjectDisposedException"/> if the <see cref="Dispose"/> method has been called.
+		/// Throws a <see cref="ObjectDisposedException"/> if the <see cref="Dispose()"/> method has been called.
 		/// </summary>
 		protected void CheckDisposed()
 		{
@@ -196,7 +204,7 @@ namespace PoolSharp
 		/// <summary>
 		/// Returns a boolean indicating if this pool is disposed or not.
 		/// </summary>
-		/// <seealso cref="Dispose"/>
+		/// <seealso cref="Dispose()"/>
 		/// <seealso cref="Dispose(bool)"/>
 		public bool IsDisposed
 		{
@@ -231,7 +239,7 @@ namespace PoolSharp
 		/// Performs dispose logic, can be overridden by derivded types.
 		/// </summary>
 		/// <param name="disposing">True if the pool is being explicitly disposed, false if it is being disposed from a finalizer.</param>
-		/// <seealso cref="Dispose"/>
+		/// <seealso cref="Dispose()"/>
 		/// <seealso cref="IsDisposed"/>
 		protected virtual void Dispose(bool disposing)
 		{
@@ -279,8 +287,12 @@ namespace PoolSharp
 						if (_PoolPolicy.ReinitializeObject != null)
 							_PoolPolicy.ReinitializeObject(item);
 
-						if (_PoolPolicy.MaximumPoolSize <= 0 || _Pool.Count < _PoolPolicy.MaximumPoolSize)
+						if (ShouldReturnToPool(item))
+						{
 							_Pool.Add(item);
+
+							Interlocked.Increment(ref _PoolInstancesCount);
+						}
 					}
 				}
 			}
@@ -321,7 +333,10 @@ namespace PoolSharp
 		{
 			_PoolPolicy.ReinitializeObject(value);
 			if (ShouldReturnToPool(value))
+			{
 				_Pool.Add(value);
+				Interlocked.Increment(ref _PoolInstancesCount);
+			}
 			else
 				SafeDispose(value);
 		}
@@ -357,7 +372,15 @@ namespace PoolSharp
 
 		private bool ShouldReturnToPool(T pooledObject)
 		{
-			return (_PoolPolicy.MaximumPoolSize == 0 || _Pool.Count < _PoolPolicy.MaximumPoolSize) && !_Pool.Contains(pooledObject);
+			if (_PoolPolicy.ErrorOnIncorrectUsage && _Pool.Contains(pooledObject))
+				throw new InvalidOperationException("Object already exists in pool. Duplicate add detected.");
+
+			return !IsPoolFull();
+		}
+
+		private bool IsPoolFull()
+		{
+			return (_PoolPolicy.MaximumPoolSize > 0 && _PoolInstancesCount >= _PoolPolicy.MaximumPoolSize);
 		}
 
 		private static bool IsTypeWrapped(Type type)

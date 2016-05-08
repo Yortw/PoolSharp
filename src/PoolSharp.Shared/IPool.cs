@@ -9,7 +9,7 @@ namespace PoolSharp
 	/// Interface for a simple object pool.
 	/// </summary>
 	/// <typeparam name="T">The type of value being pooled.</typeparam>
-	/// <seealso cref="Pool{T}"/>
+	/// <seealso cref="PoolSharp.Pool{T}"/>
 	/// <seealso cref="PooledObject{T}"/>
 	/// <seealso cref="PoolPolicy{T}"/>
 	public interface IPool<T> : IDisposable
@@ -51,7 +51,7 @@ namespace PoolSharp
 		/// <param name="increment">The maximum number of items to pre-allocate and add to the pool.</param>
 		/// <remarks>
 		/// <para>This method is 'thread safe', though it is possible under certain race conditons for the pool to go beyond it's configured maximum size by a few items.</para>
-		/// <para>If <paramref name="incremenet"/> is zero or less the method returns without doing anything</para>
+		/// <para>If <paramref name="increment"/> is zero or less the method returns without doing anything</para>
 		/// </remarks>
 		/// <exception cref="System.ObjectDisposedException">Thrown if this method is called on a disposed pool.</exception>
 		void Expand(int increment);

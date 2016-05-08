@@ -10,7 +10,7 @@ namespace PoolSharp
 	/// </summary>
 	/// <typeparam name="T">The type of item being pooled.</typeparam>
 	/// <seealso cref="PooledItemInitialization"/>
-	/// <seealso cref="Pool{T}"/>
+	/// <seealso cref="PoolSharp.Pool{T}"/>
 	public class PoolPolicy<T>
 	{
 		/// <summary>
@@ -18,7 +18,7 @@ namespace PoolSharp
 		/// </summary>
 		/// <remarks>
 		/// <para>Should return a new, clean item, ready for use by the caller. Takes a single argument being a reference to the pool that was asked for the object, useful if you're creating <see cref="PooledObject{T}"/> instances.</para>
-		/// <para>Cannot be null. If null when provided to a <see cref="Pool{T}"/> instance, an exception will be thrown.</para>
+		/// <para>Cannot be null. If null when provided to a <see cref="PoolSharp.Pool{T}"/> instance, an exception will be thrown.</para>
 		/// </remarks>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
 		public Func<IPool<T>, T> Factory { get; set; }
@@ -42,5 +42,13 @@ namespace PoolSharp
 		/// A value from the <see cref="PooledItemInitialization"/> enum specifying when and how pooled items are re-initialised.
 		/// </summary>
 		public PooledItemInitialization InitializationPolicy { get; set; } 
+		/// <summary>
+		/// If true the system will throw an <see cref="InvalidOperationException"/> when incorrect usage is detected. Normally this setting should be false (the default).
+		/// </summary>
+		/// <remarks>
+		/// <para>Enabling this feature may significantly impact performance and increase allocations, it should only be enabled in debug or test builds and only when a problem is suspected.</para>
+		/// <para>If enabled the <see cref="IPool{T}.Add(T)"/> function will throw if an item already in the pool as added a second time.</para>
+		/// </remarks>
+		public bool ErrorOnIncorrectUsage { get; set; }
 	}
 }

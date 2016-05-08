@@ -7,4 +7,3 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("PoolSharp.Bait")]
-[assembly: AssemblyFileVersion("1.0.0.0")]

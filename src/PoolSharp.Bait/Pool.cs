@@ -10,11 +10,11 @@ namespace PoolSharp
 	/// </summary>
 	/// <remarks>
 	/// <para>This pool does not block when a new item is requested and the pool is empty, instead a new will be allocated and returned.</para>
-	/// <para>By default the pool starts empty and items are allocated as needed. The <see cref="Expand()"/> method can be used to pre-load the pool if required./para>
+	/// </remarks>
+	/// <para>By default the pool starts empty and items are allocated as needed. The <see cref="Expand()"/> method can be used to pre-load the pool if required.</para>
 	/// <para>Objects returned to the pool are taken on a first come first serve basis. If the pool is full when an object is returned, it is ignored (and will be garbage collected if there are no other references to it). In this case, if the item implements <see cref="IDisposable"/> the pool will ensure it is disposed before being 'ignored'.</para>
 	/// <para>The pool makes a best effort attempt to avoid going over the specified <see cref="PoolPolicy{T}.MaximumPoolSize"/>, but does not strictly enforce it. Under certain multi-threaded scenarios it's possible for a few items more than the maximum to be kept in the pool.</para>
 	/// <para>Disposing the pool will also dispose all objects currently in the pool, if they support <see cref="IDisposable"/>.</para>
-	/// </remarks>
 	/// <typeparam name="T">The type of value being pooled.</typeparam>
 	/// <seealso cref="PoolPolicy{T}"/>
 	/// <seealso cref="IPool{T}"/>
@@ -102,7 +102,7 @@ namespace PoolSharp
 		#region Public Methods
 
 		/// <summary>
-		/// Throws a <see cref="ObjectDisposedException"/> if the <see cref="Dispose"/> method has been called.
+		/// Throws a <see cref="ObjectDisposedException"/> if the <see cref="Dispose()"/> method has been called.
 		/// </summary>
 		protected void CheckDisposed()
 		{
@@ -116,7 +116,7 @@ namespace PoolSharp
 		/// <summary>
 		/// Returns a boolean indicating if this pool is disposed or not.
 		/// </summary>
-		/// <seealso cref="Dispose"/>
+		/// <seealso cref="Dispose()"/>
 		/// <seealso cref="Dispose(bool)"/>
 		public bool IsDisposed
 		{
@@ -151,7 +151,7 @@ namespace PoolSharp
 		/// Performs dispose logic, can be overridden by derivded types.
 		/// </summary>
 		/// <param name="disposing">True if the pool is being explicitly disposed, false if it is being disposed from a finalizer.</param>
-		/// <seealso cref="Dispose"/>
+		/// <seealso cref="Dispose()"/>
 		/// <seealso cref="IsDisposed"/>
 		protected virtual void Dispose(bool disposing)
 		{

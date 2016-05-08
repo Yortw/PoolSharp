@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("PoolSharp.WinRT")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
 
 [assembly: Guid("A20B89C5-D61B-4310-9483-1268AE84550B")]
 [assembly: ComVisible(true)]

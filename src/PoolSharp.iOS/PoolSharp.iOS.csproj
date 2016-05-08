@@ -54,5 +54,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="..\PoolSharp.Shared\PoolSharp.Shared.projitems" Label="Shared" />
+  <Import Project="..\PoolSharp.Shared.ConcurrentBagImplementation\PoolSharp.Shared.ConcurrentBagImplementation.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>
