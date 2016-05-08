@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>PoolSharp</id>
-        <version>1.0.0</version>
+        <version>2.0.0</version>
         <title>PoolSharp</title>
         <authors>Yortw</authors>
         <owners>Troy Willmot</owners>
@@ -11,6 +11,7 @@
         <description>PoolSharp is a simple, light weight, thread safe object pool.</description>
         <summary />
         <tags>object pool sharp winrt uwp net40 ios android xamarin portable</tags>
+        <releaseNotes>Breaking change: New ErrorOnIncorrectUsage property on PoolPolicy can be used to enable duplicate add detection (old behaviour) but is off by default because it hurts performance and allocations. Should only be enabled on debug/test builds when looking for problems. </releaseNotes>
     </metadata>
     <files>
         <file src="PoolSharp.Android\bin\Release\PoolSharp.dll" target="lib\MonoAndroid\PoolSharp.dll" />
