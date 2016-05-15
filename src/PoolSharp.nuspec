@@ -9,6 +9,7 @@
         <licenseUrl>https://github.com/Yortw/PoolSharp/blob/master/LICENSE.md</licenseUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>PoolSharp is a simple, light weight, thread safe object pool.</description>
+	<iconUrl>https://raw.githubusercontent.com/Yortw/PoolSharp/master/icon.png</iconUrl>
         <summary />
         <tags>object pool sharp winrt uwp net40 ios android xamarin portable</tags>
         <releaseNotes>Breaking change: New ErrorOnIncorrectUsage property on PoolPolicy can be used to enable duplicate add detection (old behaviour) but is off by default because it hurts performance and allocations. Should only be enabled on debug/test builds when looking for problems. </releaseNotes>
