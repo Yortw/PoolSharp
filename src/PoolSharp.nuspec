@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>PoolSharp</id>
-        <version>2.0.0</version>
+        <version>2.0.1</version>
         <title>PoolSharp</title>
         <authors>Yortw</authors>
         <owners>Troy Willmot</owners>
@@ -12,7 +12,7 @@
 	<iconUrl>https://raw.githubusercontent.com/Yortw/PoolSharp/master/icon.png</iconUrl>
         <summary />
         <tags>object pool sharp winrt uwp net40 ios android xamarin portable</tags>
-        <releaseNotes>Breaking change: New ErrorOnIncorrectUsage property on PoolPolicy can be used to enable duplicate add detection (old behaviour) but is off by default because it hurts performance and allocations. Should only be enabled on debug/test builds when looking for problems. </releaseNotes>
+        <releaseNotes>Updated to support Profile328 PCLs.</releaseNotes>
     </metadata>
     <files>
         <file src="PoolSharp.Android\bin\Release\PoolSharp.dll" target="lib\MonoAndroid\PoolSharp.dll" />
@@ -24,9 +24,9 @@
         <file src="PoolSharp.Android\bin\Release\PoolSharp.dll" target="lib\netcore451\PoolSharp.dll" />
         <file src="PoolSharp.WinRT\bin\Release\PoolSharp.pdb" target="lib\netcore451\PoolSharp.pdb" />
         <file src="PoolSharp.Android\bin\Release\PoolSharp.XML" target="lib\netcore451\PoolSharp.XML" />
-        <file src="PoolSharp.Bait\bin\Release\PoolSharp.dll" target="lib\portable-net4+sl5+wp8+win8\PoolSharp.dll" />
-        <file src="PoolSharp.Bait\bin\Release\PoolSharp.pdb" target="lib\portable-net4+sl5+wp8+win8\PoolSharp.pdb" />
-        <file src="PoolSharp.Bait\bin\Release\PoolSharp.XML" target="lib\portable-net4+sl5+wp8+win8\PoolSharp.XML" />
+        <file src="PoolSharp.Bait\bin\Release\PoolSharp.dll" target="lib\portable-net40+sl5+win8+wpa81+wp8\PoolSharp.dll" />
+        <file src="PoolSharp.Bait\bin\Release\PoolSharp.pdb" target="lib\portable-net40+sl5+win8+wpa81+wp8\PoolSharp.pdb" />
+        <file src="PoolSharp.Bait\bin\Release\PoolSharp.XML" target="lib\portable-net40+sl5+win8+wpa81+wp8\PoolSharp.XML" />
         <file src="PoolSharp.iOS\bin\Release\PoolSharp.dll" target="lib\Xamarin.iOS10\PoolSharp.dll" />
         <file src="PoolSharp.iOS\bin\Release\PoolSharp.pdb" target="lib\Xamarin.iOS10\PoolSharp.pdb" />
         <file src="PoolSharp.iOS\bin\Release\PoolSharp.XML" target="lib\Xamarin.iOS10\PoolSharp.XML" />
