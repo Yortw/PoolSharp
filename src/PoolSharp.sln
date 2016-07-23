@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoolSharp.Android", "PoolSharp.Android\PoolSharp.Android.csproj", "{65D7C15C-4466-47E3-86EC-5B4BF6784EFC}"
 EndProject
@@ -21,17 +21,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoolSharp.iOS", "PoolSharp.
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		PoolSharp.Shared.ConcurrentBagImplementation\PoolSharp.Shared.ConcurrentBagImplementation.projitems*{608b4bb8-f156-4caf-9438-10ddaad4ac85}*SharedItemsImports = 13
-		PoolSharp.Shared\PoolSharp.Shared.projitems*{2b84bad6-bcbc-4bdb-a7f2-5456b41adbfe}*SharedItemsImports = 4
 		PoolSharp.Shared.ConcurrentBagImplementation\PoolSharp.Shared.ConcurrentBagImplementation.projitems*{2b84bad6-bcbc-4bdb-a7f2-5456b41adbfe}*SharedItemsImports = 4
-		PoolSharp.Shared\PoolSharp.Shared.projitems*{cbfc6a7b-bda2-4b82-bb67-b826c67485c9}*SharedItemsImports = 4
-		PoolSharp.Shared.ConcurrentBagImplementation\PoolSharp.Shared.ConcurrentBagImplementation.projitems*{cbfc6a7b-bda2-4b82-bb67-b826c67485c9}*SharedItemsImports = 4
+		PoolSharp.Shared\PoolSharp.Shared.projitems*{2b84bad6-bcbc-4bdb-a7f2-5456b41adbfe}*SharedItemsImports = 4
+		PoolSharp.Shared.ConcurrentBagImplementation\PoolSharp.Shared.ConcurrentBagImplementation.projitems*{608b4bb8-f156-4caf-9438-10ddaad4ac85}*SharedItemsImports = 13
+		PoolSharp.Shared.ConcurrentBagImplementation\PoolSharp.Shared.ConcurrentBagImplementation.projitems*{65d7c15c-4466-47e3-86ec-5b4bf6784efc}*SharedItemsImports = 4
+		PoolSharp.Shared\PoolSharp.Shared.projitems*{65d7c15c-4466-47e3-86ec-5b4bf6784efc}*SharedItemsImports = 4
 		PoolSharp.Shared\PoolSharp.Shared.projitems*{7c67beb5-aa83-4e75-9861-df8859cbd342}*SharedItemsImports = 4
 		PoolSharp.Shared\PoolSharp.Shared.projitems*{8783db11-587d-4018-ae4b-e5f38d6e6170}*SharedItemsImports = 13
-		PoolSharp.Shared\PoolSharp.Shared.projitems*{ccd27104-a79b-4454-9d8b-0153b3ffa37e}*SharedItemsImports = 4
+		PoolSharp.Shared.ConcurrentBagImplementation\PoolSharp.Shared.ConcurrentBagImplementation.projitems*{cbfc6a7b-bda2-4b82-bb67-b826c67485c9}*SharedItemsImports = 4
+		PoolSharp.Shared\PoolSharp.Shared.projitems*{cbfc6a7b-bda2-4b82-bb67-b826c67485c9}*SharedItemsImports = 4
 		PoolSharp.Shared.ConcurrentBagImplementation\PoolSharp.Shared.ConcurrentBagImplementation.projitems*{ccd27104-a79b-4454-9d8b-0153b3ffa37e}*SharedItemsImports = 4
-		PoolSharp.Shared\PoolSharp.Shared.projitems*{65d7c15c-4466-47e3-86ec-5b4bf6784efc}*SharedItemsImports = 4
-		PoolSharp.Shared.ConcurrentBagImplementation\PoolSharp.Shared.ConcurrentBagImplementation.projitems*{65d7c15c-4466-47e3-86ec-5b4bf6784efc}*SharedItemsImports = 4
+		PoolSharp.Shared\PoolSharp.Shared.projitems*{ccd27104-a79b-4454-9d8b-0153b3ffa37e}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		AppStore|Any CPU = AppStore|Any CPU
