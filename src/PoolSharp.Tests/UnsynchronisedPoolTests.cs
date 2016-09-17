@@ -1,26 +1,65 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace PoolSharp.Tests
 {
 	[TestClass]
-	public class PoolTests
+	public class UnsynchronisedPoolTests
 	{
 
 		#region Constructor Tests
 
 		[TestMethod]
 		[ExpectedException(typeof(ArgumentNullException))]
-		public void Pool_Constructor_ThrowsOnNullPolicy()
+		public void UnsynchronisedPool_Constructor_ThrowsOnNullPolicy()
 		{
-			new Pool<TestPoolItem>(null);
+			new UnsynchronizedPool<TestPoolItem>(null);
 		}
 
 		[TestMethod]
 		[ExpectedException(typeof(ArgumentException))]
-		public void Pool_Constructor_ThrowsOnNullFactoryFunc()
+		public void UnsynchronisedPool_Constructor_ThrowsOnNullFactoryFunc()
 		{
-			new Pool<TestPoolItem>(new PoolPolicy<TestPoolItem>());
+			new UnsynchronizedPool<TestPoolItem>(new PoolPolicy<TestPoolItem>());
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(ArgumentException))]
+		public void UnsynchronisedPool_Constructor_ThrowsOnAsyncReturnPolicy()
+		{
+			new UnsynchronizedPool<TestPoolItem>(new PoolPolicy<TestPoolItem>()
+			{
+				Factory = (pool) => new Tests.TestPoolItem(),
+				InitializationPolicy = PooledItemInitialization.AsyncReturn
+			});
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(ArgumentException))]
+		public void UnsynchronisedPool_Constructor_ThrowsWhenMaximumPoolSizeIsZero()
+		{
+			new UnsynchronizedPool<TestPoolItem>(new PoolPolicy<TestPoolItem>()
+			{
+				Factory = (pool) => new Tests.TestPoolItem(),
+				InitializationPolicy = PooledItemInitialization.Return,
+				MaximumPoolSize = 0
+			});
+		}
+
+
+		[TestMethod]
+		[ExpectedException(typeof(ArgumentException))]
+		public void UnsynchronisedPool_Constructor_ThrowsWhenMaximumPoolSizeIsLessThanZero()
+		{
+			new UnsynchronizedPool<TestPoolItem>(new PoolPolicy<TestPoolItem>()
+			{
+				Factory = (pool) => new Tests.TestPoolItem(),
+				InitializationPolicy = PooledItemInitialization.Return,
+				MaximumPoolSize = -1
+			});
 		}
 
 		#endregion
@@ -28,7 +67,7 @@ namespace PoolSharp.Tests
 		#region Take Tests
 
 		[TestMethod]
-		public void Pool_Take_ProvidesInstance()
+		public void UnsynchronisedPool_Take_ProvidesInstance()
 		{
 			var pool = GetPool();
 			var item = pool.Take();
@@ -36,17 +75,7 @@ namespace PoolSharp.Tests
 		}
 
 		[TestMethod]
-		public void Pool_Take_TreatsZeroMaximumSizeAsUnlimited()
-		{
-			var pool = GetPool(0, PooledItemInitialization.Return);
-			var item = pool.Take();
-			pool.Add(item);
-			var item2 = pool.Take();
-			Assert.AreEqual(item, item2);
-		}
-
-		[TestMethod]
-		public void Pool_Take_ProvidesUniqueInstance()
+		public void UnsynchronisedPool_Take_ProvidesUniqueInstance()
 		{
 			var pool = GetPool();
 			var item = pool.Take();
@@ -55,7 +84,7 @@ namespace PoolSharp.Tests
 		}
 
 		[TestMethod]
-		public void Pool_Take_ReturnsInstanceWhenFull()
+		public void UnsynchronisedPool_Take_ReturnsInstanceWhenFull()
 		{
 			var pool = GetPool();
 			for (int cnt = 0; cnt < 6; cnt++)
@@ -66,7 +95,7 @@ namespace PoolSharp.Tests
 		}
 
 		[TestMethod]
-		public void Pool_Take_ItemIsResetOnTake()
+		public void UnsynchronisedPool_Take_ItemIsResetOnTake()
 		{
 			var pool = GetPool(1, PooledItemInitialization.Take);
 			var item = pool.Take();
@@ -80,7 +109,7 @@ namespace PoolSharp.Tests
 
 		[ExpectedException(typeof(ObjectDisposedException))]
 		[TestMethod]
-		public void Pool_Take_ThrowsWhenPoolDisposed()
+		public void UnsynchronisedPool_Take_ThrowsWhenPoolDisposed()
 		{
 			var pool = GetPool(1, PooledItemInitialization.Take);
 			pool.Dispose();
@@ -92,7 +121,7 @@ namespace PoolSharp.Tests
 		#region Add Tests
 
 		[TestMethod]
-		public void Pool_Add_ReturnsItemToPool()
+		public void UnsynchronisedPool_Add_ReturnsItemToPool()
 		{
 			var pool = GetPool(1, PooledItemInitialization.Return);
 			var item = pool.Take();
@@ -103,14 +132,14 @@ namespace PoolSharp.Tests
 
 		[ExpectedException(typeof(ArgumentNullException))]
 		[TestMethod]
-		public void Pool_Add_ThrowsOnNullInstance()
+		public void UnsynchronisedPool_Add_ThrowsOnNullInstance()
 		{
 			var pool = GetPool();
-			pool.Add(null);	
+			pool.Add(null);
 		}
 
 		[TestMethod]
-		public void Pool_Add_DisposesInstanceWhenPoolDisposed()
+		public void UnsynchronisedPool_Add_DisposesInstanceWhenPoolDisposed()
 		{
 			var pool = GetDisposablePool();
 			var item = pool.Take();
@@ -121,18 +150,7 @@ namespace PoolSharp.Tests
 		}
 
 		[TestMethod]
-		public void Pool_Add_DisposesValueOnPooledObjectWhenPoolDisposed()
-		{
-			var pool = GetPoolForPooledObjectWrapper();
-			var item = pool.Take();
-			pool.Dispose();
-			Assert.IsFalse(item.Value.IsDisposed);
-			pool.Add(item);
-			Assert.IsTrue(item.Value.IsDisposed);
-		}
-
-		[TestMethod]
-		public void Pool_Add_DisposesInstanceWhenPoolFull()
+		public void UnsynchronisedPool_Add_DisposesInstanceWhenPoolFull()
 		{
 			var pool = GetDisposablePool(1, PooledItemInitialization.Return);
 
@@ -146,7 +164,7 @@ namespace PoolSharp.Tests
 		}
 
 		[TestMethod]
-		public void Pool_Add_DisposesValueOnPooledObjectWhenPoolFull()
+		public void UnsynchronisedPool_Add_DisposesValueOnPooledObjectWhenPoolFull()
 		{
 			var pool = GetPoolForPooledObjectWrapper();
 
@@ -160,7 +178,7 @@ namespace PoolSharp.Tests
 		}
 
 		[TestMethod]
-		public void Pool_Add_ItemIsResetOnAdd()
+		public void UnsynchronisedPool_Add_ItemIsResetOnAdd()
 		{
 			var pool = GetPool(1, PooledItemInitialization.Return);
 			var item = pool.Take();
@@ -172,35 +190,19 @@ namespace PoolSharp.Tests
 			Assert.AreNotEqual(itemId, item.Id);
 		}
 
-		[TestMethod]
-		public void Pool_Add_ReinitialisesItemOnBackgroundThread()
-		{
-			using (var pool = GetPool(1, PooledItemInitialization.AsyncReturn))
-			{
-				var item = pool.Take();
-				Guid itemId = item.Id;
-				pool.Add(item);
-				System.Threading.Thread.Sleep(500);
-				Assert.AreNotEqual(itemId, item.Id);
-				Assert.AreNotEqual(System.Threading.Thread.CurrentThread.ManagedThreadId, item.ResetByThreadId);
-				var item2 = pool.Take();
-				Assert.AreEqual(item, item2);
-			}
-		}
-
 		#endregion
 
 		#region Dispose Tests
 
 		[TestMethod]
-		public void Pool_Dispose_ExecutesWhenTypeIsNotDisposable()
+		public void UnsynchronisedPool_Dispose_ExecutesWhenTypeIsNotDisposable()
 		{
 			var pool = GetPool();
 			pool.Dispose();
 		}
 
 		[TestMethod]
-		public void Pool_Dispose_AllowsRepeatCallsWhenTypeIsNotDisposable()
+		public void UnsynchronisedPool_Dispose_AllowsRepeatCallsWhenTypeIsNotDisposable()
 		{
 			var pool = GetPool();
 			pool.Dispose();
@@ -208,14 +210,14 @@ namespace PoolSharp.Tests
 		}
 
 		[TestMethod]
-		public void Pool_Dispose_ExecutesWhenTypeIsDisposable()
+		public void UnsynchronisedPool_Dispose_ExecutesWhenTypeIsDisposable()
 		{
 			var pool = GetDisposablePool();
 			pool.Dispose();
 		}
 
 		[TestMethod]
-		public void Pool_Dispose_AllowsRepeatCallsWhenTypeIsDisposable()
+		public void UnsynchronisedPool_Dispose_AllowsRepeatCallsWhenTypeIsDisposable()
 		{
 			var pool = GetDisposablePool();
 			pool.Dispose();
@@ -223,7 +225,7 @@ namespace PoolSharp.Tests
 		}
 
 		[TestMethod]
-		public void Pool_Dispose_DisposesSubTypesWhenDisposed()
+		public void UnsynchronisedPool_Dispose_DisposesSubTypesWhenDisposed()
 		{
 			var pool = GetDisposablePool();
 			var item = pool.Take();
@@ -234,7 +236,7 @@ namespace PoolSharp.Tests
 		}
 
 		[TestMethod]
-		public void Pool_Dispose_DisposesItemWhenReturnedToFullPool()
+		public void UnsynchronisedPool_Dispose_DisposesItemWhenReturnedToFullPool()
 		{
 			var pool = GetDisposablePool(1, PooledItemInitialization.Return);
 			var item = pool.Take();
@@ -249,7 +251,7 @@ namespace PoolSharp.Tests
 		}
 
 		[TestMethod]
-		public void Pool_Dispose_SetsIsDisposed()
+		public void UnsynchronisedPool_Dispose_SetsIsDisposed()
 		{
 			var pool = GetDisposablePool(1, PooledItemInitialization.Return);
 			Assert.IsFalse(pool.IsDisposed);
@@ -258,7 +260,7 @@ namespace PoolSharp.Tests
 		}
 
 		[TestMethod]
-		public void Pool_Dispose_DisposesValueOnPooledObject()
+		public void UnsynchronisedPool_Dispose_DisposesValueOnPooledObject()
 		{
 			var pool = GetPoolForPooledObjectWrapper();
 			var item = pool.Take();
@@ -274,16 +276,7 @@ namespace PoolSharp.Tests
 		#region Expand Tests
 
 		[TestMethod]
-		public void Pool_Expand_OnUnlimitedPoolAllocatesNothing()
-		{
-			var pool = GetPool(0, PooledItemInitialization.Return);
-			TestPoolItem.InstanceCount = 0;
-			pool.Expand();
-			Assert.AreEqual(0, TestPoolItem.InstanceCount);
-		}
-
-		[TestMethod]
-		public void Pool_Expand_CreatesExpectedNumberOfInstances()
+		public void UnsynchronisedPool_Expand_CreatesExpectedNumberOfInstances()
 		{
 			var pool = GetPool();
 			TestPoolItem.InstanceCount = 0;
@@ -292,7 +285,7 @@ namespace PoolSharp.Tests
 		}
 
 		[TestMethod]
-		public void Pool_ExpandByAmount_CreatesExpectedNumberOfInstances()
+		public void UnsynchronisedPool_ExpandByAmount_CreatesExpectedNumberOfInstances()
 		{
 			var pool = GetPool();
 			TestPoolItem.InstanceCount = 0;
@@ -301,7 +294,7 @@ namespace PoolSharp.Tests
 		}
 
 		[TestMethod]
-		public void Pool_ExpandByAmount_ObeysMaximumPoolSize()
+		public void UnsynchronisedPool_ExpandByAmount_ObeysMaximumPoolSize()
 		{
 			var pool = GetPool();
 
@@ -316,18 +309,8 @@ namespace PoolSharp.Tests
 		}
 
 		[TestMethod]
-		public void Pool_ExpandByAmount_OnUnlimitedPoolExpandsByIncrement()
-		{
-			var pool = GetPool(0, PooledItemInitialization.Return);
-
-			TestPoolItem.InstanceCount = 0;
-			pool.Expand(5);
-			Assert.AreEqual(5, TestPoolItem.InstanceCount);
-		}
-
-		[TestMethod]
 		[ExpectedException(typeof(ObjectDisposedException))]
-		public void Pool_Expand_ThrowsWhenDisposed()
+		public void UnsynchronisedPool_Expand_ThrowsWhenDisposed()
 		{
 			var pool = GetPool();
 			pool.Dispose();
@@ -336,33 +319,11 @@ namespace PoolSharp.Tests
 
 		[TestMethod]
 		[ExpectedException(typeof(ObjectDisposedException))]
-		public void Pool_ExpandByAmount_ThrowsWhenDisposed()
+		public void UnsynchronisedPool_ExpandByAmount_ThrowsWhenDisposed()
 		{
 			var pool = GetPool();
 			pool.Dispose();
 			pool.Expand(10);
-		}
-
-		#endregion
-
-		#region PooledObject<T> Tests
-
-		[TestMethod]
-		public void PooledObject_Dispose_ReturnsToPool()
-		{
-			var pool = GetPoolForPooledObjectWrapper();
-
-			PooledObject<DisposableTestPoolItem> itemRef = null;
-			Guid itemId = Guid.Empty;
-			using (var item = pool.Take())
-			{
-				itemRef = item;
-				itemId = item.Value.Id;
-			}
-			var item2 = pool.Take();
-
-			Assert.AreEqual((object)item2.Value, (object)itemRef.Value);
-			Assert.AreNotEqual(item2.Value.Id, itemId);
 		}
 
 		#endregion
@@ -389,7 +350,7 @@ namespace PoolSharp.Tests
 				}
 			};
 
-			return new Pool<TestPoolItem>(policy);
+			return new UnsynchronizedPool<TestPoolItem>(policy);
 		}
 
 		private IPool<DisposableTestPoolItem> GetDisposablePool()
@@ -412,7 +373,7 @@ namespace PoolSharp.Tests
 				}
 			};
 
-			return new Pool<DisposableTestPoolItem>(policy);
+			return new UnsynchronizedPool<DisposableTestPoolItem>(policy);
 		}
 
 		private static Pool<PooledObject<DisposableTestPoolItem>> GetPoolForPooledObjectWrapper()

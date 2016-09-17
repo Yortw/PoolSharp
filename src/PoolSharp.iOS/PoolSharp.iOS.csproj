@@ -23,6 +23,7 @@
     <ConsolePause>false</ConsolePause>
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>..\PoolSharpAnalysis.ruleset</CodeAnalysisRuleSet>
+    <DocumentationFile>bin\Debug\PoolSharp.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>full</DebugType>

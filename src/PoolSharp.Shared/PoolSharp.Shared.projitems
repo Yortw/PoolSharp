@@ -11,8 +11,11 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AssemblyInfoCommon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IPool.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PoolBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PooledItemInitialization.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PooledObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PoolPolicy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ReflectionUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UnsynchronizedPool.cs" />
   </ItemGroup>
 </Project>

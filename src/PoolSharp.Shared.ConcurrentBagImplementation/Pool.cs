@@ -8,7 +8,7 @@ using System.Threading;
 namespace PoolSharp
 {
 	/// <summary>
-	/// A simple non-blocking object pool.
+	/// A non-blocking object pool optimised for situations involving heavily concurrent access.
 	/// </summary>
 	/// <remarks>
 	/// <para>This pool does not block when a new item is requested and the pool is empty, instead a new will be allocated and returned.</para>
@@ -21,21 +21,15 @@ namespace PoolSharp
 	/// <seealso cref="PoolPolicy{T}"/>
 	/// <seealso cref="IPool{T}"/>
 	/// <seealso cref="PooledObject{T}"/>
-	public class Pool<T> : IPool<T>
+	public class Pool<T> : PoolBase<T>
 	{
 
 		#region Fields
 
 		private readonly System.Collections.Concurrent.ConcurrentBag<T> _Pool;
-		private readonly PoolPolicy<T> _PoolPolicy;
 		private readonly System.Collections.Concurrent.BlockingCollection<T> _ItemsToInitialise;
-		private readonly bool _IsPooledTypeDisposable;
-		private readonly bool _IsPooledTypeWrapped;
-		private bool _IsDisposed;
 
 		private long _PoolInstancesCount;
-
-		private PropertyInfo _PooledObjectValueProperty;
 
 #if SUPPORTS_THREADS
 				System.Threading.Thread _ReinitialiseThread; 
@@ -51,18 +45,11 @@ namespace PoolSharp
 		/// <param name="poolPolicy">A <seealso cref="PoolPolicy{T}"/> instance containing configuration information for the pool.</param>
 		/// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="poolPolicy"/> argument is null.</exception>
 		/// <exception cref="System.ArgumentException">Thrown if the <see cref="PoolPolicy{T}.Factory"/> property of the <paramref name="poolPolicy"/> argument is null.</exception>
-		public Pool(PoolPolicy<T> poolPolicy)
+		public Pool(PoolPolicy<T> poolPolicy) : base(poolPolicy)
 		{
-			if (poolPolicy == null) throw new ArgumentNullException(nameof(poolPolicy));
-			if (poolPolicy.Factory == null) throw new ArgumentException("poolPolicy.Factory cannot be null");
-
-			_IsPooledTypeWrapped = IsTypeWrapped(typeof(T));
-			_IsPooledTypeDisposable = IsTypeDisposable(typeof(T));
-
-			_PoolPolicy = poolPolicy;
 			_Pool = new System.Collections.Concurrent.ConcurrentBag<T>();
 
-			if (_PoolPolicy.InitializationPolicy == PooledItemInitialization.AsyncReturn)
+			if (PoolPolicy.InitializationPolicy == PooledItemInitialization.AsyncReturn)
 			{
 				_ItemsToInitialise = new System.Collections.Concurrent.BlockingCollection<T>();
 #if SUPPORTS_THREADS
@@ -89,7 +76,7 @@ namespace PoolSharp
 		/// </remarks>
 		/// <returns>Returns an instance of {T} from the pool, or a new instance if the pool is empty.</returns>
 		/// <exception cref="ObjectDisposedException">Thrown if the pool has been disposed.</exception>
-		public T Take()
+		public override T Take()
 		{
 			CheckDisposed();
 
@@ -99,11 +86,11 @@ namespace PoolSharp
 			{
 				Interlocked.Decrement(ref _PoolInstancesCount);
 
-				if (_PoolPolicy.InitializationPolicy == PooledItemInitialization.Take && _PoolPolicy.ReinitializeObject != null)
-					_PoolPolicy.ReinitializeObject(retVal);
+				if (PoolPolicy.InitializationPolicy == PooledItemInitialization.Take && PoolPolicy.ReinitializeObject != null)
+					PoolPolicy.ReinitializeObject(retVal);
 			}
 			else
-				retVal = _PoolPolicy.Factory(this);
+				retVal = PoolPolicy.Factory(this);
 
 			return retVal;
 		}
@@ -113,14 +100,15 @@ namespace PoolSharp
 		/// </summary>
 		/// <param name="value"></param>
 		/// <remarks>
-		/// <para>Items will be returned to the pool if it is not full and the item is not already in the pool, otherwise no action is taken and no error is reported.</para>
+		/// <para>Items will be returned to the pool if it is not full, otherwise no action is taken and no error is reported.</para>
 		/// <para>If the policy for the pool specifies <see cref="PooledItemInitialization.AsyncReturn"/> the item will be queued for re-intialisation on a background thread before being returned to the pool, control will return to the caller once the item has been queued even if it has not yet been fully re-initialised and returned to the pool.</para>
 		/// <para>If the item is NOT returned to the pool, and {T} implements <see cref="System.IDisposable"/>, the instance will be disposed before the method returns.</para>
-		/// <para>Calling this method in a disposed pool will dispose the returned item if it supports <see cref="IDisposable"/>, but takes no other action and throws no error.</para>
+		/// <para>Calling this method on a disposed pool will dispose the returned item if it supports <see cref="IDisposable"/>, but takes no other action and throws no error.</para>
 		/// <para>This method is 'thread safe', though it is possible for multiple threads returning items at the same time to add items beyond the maximum pool size. This should be rare and have few ill effects. Over time the pool will likely return to it's normal size.</para>
 		/// </remarks>
 		/// <exception cref="ArgumentNullException">Thrown if the <paramref name="value"/> is null.</exception>
-		public void Add(T value)
+		/// <exception cref="InvalidOperationException">Thrown if the <see cref="PoolPolicy{T}.ErrorOnIncorrectUsage"/> is true and the same instance already exists in the pool.</exception>
+		public override void Add(T value)
 		{
 			if (value == null) throw new ArgumentNullException(nameof(value));
 
@@ -132,12 +120,12 @@ namespace PoolSharp
 
 			if (ShouldReturnToPool(value))
 			{
-				if (_PoolPolicy.InitializationPolicy == PooledItemInitialization.AsyncReturn)
+				if (PoolPolicy.InitializationPolicy == PooledItemInitialization.AsyncReturn)
 					SafeAddToReinitialiseQueue(value);
 				else
 				{
-					if (_PoolPolicy.InitializationPolicy == PooledItemInitialization.Return && _PoolPolicy.ReinitializeObject != null)
-						_PoolPolicy.ReinitializeObject(value);
+					if (PoolPolicy.InitializationPolicy == PooledItemInitialization.Return && PoolPolicy.ReinitializeObject != null)
+						PoolPolicy.ReinitializeObject(value);
 
 					_Pool.Add(value);
 					Interlocked.Increment(ref _PoolInstancesCount);
@@ -155,9 +143,9 @@ namespace PoolSharp
 		/// <para>If the maximum pool size is set to zero or less (meaning no limit) then the method returns without doing anything, no instances are added to the pool.</para>
 		/// </remarks>
 		/// <exception cref="System.ObjectDisposedException">Thrown if this method is called on a disposed pool.</exception>
-		public void Expand()
+		public override void Expand()
 		{
-			Expand(_PoolPolicy.MaximumPoolSize);
+			Expand(PoolPolicy.MaximumPoolSize);
 		}
 
 		/// <summary>
@@ -169,7 +157,7 @@ namespace PoolSharp
 		/// <para>If <paramref name="increment"/> is zero or less the method returns without doing anything</para>
 		/// </remarks>
 		/// <exception cref="System.ObjectDisposedException">Thrown if this method is called on a disposed pool.</exception>
-		public void Expand(int increment)
+		public override void Expand(int increment)
 		{
 			CheckDisposed();
 
@@ -178,76 +166,29 @@ namespace PoolSharp
 			int createdCount = 0;
 			while (createdCount < increment && !IsPoolFull())
 			{
-				_Pool.Add(_PoolPolicy.Factory(this));
+				_Pool.Add(PoolPolicy.Factory(this));
 				Interlocked.Increment(ref _PoolInstancesCount);
 				createdCount++;
-			}
-		
+			}		
 		}
 
 		#endregion
 
-		#region Public Methods
-
-		/// <summary>
-		/// Throws a <see cref="ObjectDisposedException"/> if the <see cref="Dispose()"/> method has been called.
-		/// </summary>
-		protected void CheckDisposed()
-		{
-			if (_IsDisposed) throw new ObjectDisposedException(this.GetType().FullName);
-		}
-
-		#endregion
-
-		#region IDisposable & Related Implementation 
-
-		/// <summary>
-		/// Returns a boolean indicating if this pool is disposed or not.
-		/// </summary>
-		/// <seealso cref="Dispose()"/>
-		/// <seealso cref="Dispose(bool)"/>
-		public bool IsDisposed
-		{
-			get { return _IsDisposed; }
-		}
-
-		/// <summary>
-		/// Disposes this pool and all contained objects (if they are disposable).
-		/// </summary>
-		/// <remarks>
-		/// <para>A pool can only be disposed once, calling this method multiple times will have no effect after the first invocation.</para>
-		/// </remarks>
-		/// <seealso cref="IsDisposed"/>
-		/// <seealso cref="Dispose(bool)"/>
-		public void Dispose()
-		{
-			if (_IsDisposed) return;
-
-			try
-			{
-				_IsDisposed = true;
-
-				Dispose(true);
-			}
-			finally
-			{
-				GC.SuppressFinalize(this);
-			}
-		}
+		#region Overrides
 
 		/// <summary>
 		/// Performs dispose logic, can be overridden by derivded types.
 		/// </summary>
 		/// <param name="disposing">True if the pool is being explicitly disposed, false if it is being disposed from a finalizer.</param>
-		/// <seealso cref="Dispose()"/>
-		/// <seealso cref="IsDisposed"/>
-		protected virtual void Dispose(bool disposing)
+		/// <seealso cref="PoolBase{T}.Dispose()"/>
+		/// <seealso cref="PoolBase{T}.IsDisposed"/>
+		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
 			{
 				_ItemsToInitialise?.CompleteAdding();
 
-				if (_IsPooledTypeDisposable)
+				if (IsPooledTypeDisposable)
 				{
 					T item;
 
@@ -280,12 +221,12 @@ namespace PoolSharp
 
 				if (item != null)
 				{
-					if (_IsDisposed)
+					if (IsDisposed)
 						SafeDispose(item);
 					else
 					{
-						if (_PoolPolicy.ReinitializeObject != null)
-							_PoolPolicy.ReinitializeObject(item);
+						if (PoolPolicy.ReinitializeObject != null)
+							PoolPolicy.ReinitializeObject(item);
 
 						if (ShouldReturnToPool(item))
 						{
@@ -320,7 +261,7 @@ namespace PoolSharp
 
 			//If we're done but the there are disposable items in the queue,
 			//dispose each one.
-			if (!_ItemsToInitialise.IsCompleted && _IsPooledTypeDisposable)
+			if (!_ItemsToInitialise.IsCompleted && IsPooledTypeDisposable)
 			{
 				while (!_ItemsToInitialise.IsCompleted)
 				{
@@ -331,9 +272,9 @@ namespace PoolSharp
 
 		private void ReinitialiseAndReturnToPoolOrDispose(T value)
 		{
-			_PoolPolicy.ReinitializeObject(value);
 			if (ShouldReturnToPool(value))
 			{
+				PoolPolicy.ReinitializeObject(value);
 				_Pool.Add(value);
 				Interlocked.Increment(ref _PoolInstancesCount);
 			}
@@ -341,38 +282,9 @@ namespace PoolSharp
 				SafeDispose(value);
 		}
 
-
-#if NETFX_CORE
-		private void SafeDispose(object pooledObject)
-		{
-			if (_IsPooledTypeWrapped)
-			{
-				if (_PooledObjectValueProperty == null)
-					_PooledObjectValueProperty = typeof(T).GetTypeInfo().DeclaredProperties.Where((p) => p.Name == "Value").First();
-
-				pooledObject = _PooledObjectValueProperty.GetValue(pooledObject, null);
-			}
-
-			(pooledObject as IDisposable)?.Dispose();
-		}
-#else
-		private void SafeDispose(object pooledObject)
-		{
-			if (_IsPooledTypeWrapped)
-			{				
-				if (_PooledObjectValueProperty == null)
-					_PooledObjectValueProperty = typeof(T).GetProperty("Value"); 
-				
-				pooledObject = _PooledObjectValueProperty.GetValue(pooledObject, null);
-			}
-
-			(pooledObject as IDisposable)?.Dispose();
-		}
-#endif
-
 		private bool ShouldReturnToPool(T pooledObject)
 		{
-			if (_PoolPolicy.ErrorOnIncorrectUsage && _Pool.Contains(pooledObject))
+			if (PoolPolicy.ErrorOnIncorrectUsage && _Pool.Contains(pooledObject))
 				throw new InvalidOperationException("Object already exists in pool. Duplicate add detected.");
 
 			return !IsPoolFull();
@@ -380,35 +292,8 @@ namespace PoolSharp
 
 		private bool IsPoolFull()
 		{
-			return (_PoolPolicy.MaximumPoolSize > 0 && _PoolInstancesCount >= _PoolPolicy.MaximumPoolSize);
+			return (PoolPolicy.MaximumPoolSize > 0 && _PoolInstancesCount >= PoolPolicy.MaximumPoolSize);
 		}
-
-		private static bool IsTypeWrapped(Type type)
-		{
-#if NETFX_CORE
-			return type.GetTypeInfo().IsGenericType && (type.GetGenericTypeDefinition() == typeof(PooledObject<>));
-#else
-			return type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(PooledObject<>));
-#endif
-		}
-
-#if NETFX_CORE
-		private bool IsTypeDisposable(Type type)
-		{
-			if (_IsPooledTypeWrapped)
-				type = type.GetTypeInfo().GenericTypeArguments.First();
-
-			return (from i in type.GetTypeInfo().ImplementedInterfaces where i == typeof(IDisposable) select i).Any();
-		}
-#else
-		private bool IsTypeDisposable(Type type)
-		{
-			if (_IsPooledTypeWrapped)
-				type = type.GetGenericArguments().First();
-
-			return (from i in type.GetInterfaces() where i == typeof(IDisposable) select i).Any();
-		}
-#endif
 
 		#endregion
 	}

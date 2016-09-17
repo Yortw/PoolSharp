@@ -57,6 +57,7 @@
     <Compile Include="PoolTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestPoolItem.cs" />
+    <Compile Include="UnsynchronisedPoolTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PoolSharp.Net40\PoolSharp.Net40.csproj">

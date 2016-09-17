@@ -10,6 +10,7 @@
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>PoolSharp is a simple, light weight, thread safe object pool.</description>
 	<iconUrl>https://raw.githubusercontent.com/Yortw/PoolSharp/master/icon.png</iconUrl>
+        <projectUrl>https://github.com/Yortw/PoolSharp</projectUrl>
         <summary />
         <tags>object pool sharp winrt uwp net40 ios android xamarin portable</tags>
         <releaseNotes>Fix Nuget package to apply correct references for UWP projects.</releaseNotes>
