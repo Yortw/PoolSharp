@@ -19,7 +19,7 @@ namespace PoolSharp
 	/// <seealso cref="PoolPolicy{T}"/>
 	/// <seealso cref="IPool{T}"/>
 	/// <seealso cref="PooledObject{T}"/>
-	public class Pool<T> : IPool<T>, IDisposable
+	public class Pool<T> : PoolBase<T>
 	{
 
 		#region Constructors
@@ -31,7 +31,7 @@ namespace PoolSharp
 		/// <exception cref="ArgumentNullException">Thrown if the <paramref name="poolPolicy"/> argument is null.</exception>
 		/// <exception cref="ArgumentException">Thrown if the <see cref="PoolPolicy{T}.Factory"/> property of the <paramref name="poolPolicy"/> argument is null.</exception>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "poolPolicy")]
-		public Pool(PoolPolicy<T> poolPolicy)
+		public Pool(PoolPolicy<T> poolPolicy) : base(poolPolicy)
 		{
 			ExceptionHelper.ThrowYoureDoingItWrong();
 		}
@@ -49,7 +49,7 @@ namespace PoolSharp
 		/// </remarks>
 		/// <returns>Returns an instance of {T} from the pool, or a new instance if the pool is empty.</returns>
 		/// <exception cref="ObjectDisposedException">Thrown if the pool has been disposed.</exception>
-		public T Take()
+		public override T Take()
 		{
 			ExceptionHelper.ThrowYoureDoingItWrong();
 			return default(T);
@@ -67,7 +67,7 @@ namespace PoolSharp
 		/// <para>This method is 'thread safe', though it is possible for multiple threads returning items at the same time to add items beyond the maximum pool size. This should be rare and have few ill effects. Over time the pool will likely return to it's normal size.</para>
 		/// </remarks>
 		/// <exception cref="ArgumentNullException">Thrown if the <paramref name="value"/> is null.</exception>
-		public void Add(T value)
+		public override void Add(T value)
 		{
 			ExceptionHelper.ThrowYoureDoingItWrong();
 		}
@@ -79,7 +79,7 @@ namespace PoolSharp
 		/// <para>This method is 'thread safe', though it is possible under certain race conditons for the pool to go beyond it's configured maximum size by a few items.</para>
 		/// </remarks>
 		/// <exception cref="System.ObjectDisposedException">Thrown if this method is called on a disposed pool.</exception>
-		public void Expand()
+		public override void Expand()
 		{
 			ExceptionHelper.ThrowYoureDoingItWrong();
 		}
@@ -92,19 +92,7 @@ namespace PoolSharp
 		/// <para>This method is 'thread safe', though it is possible under certain race conditons for the pool to go beyond it's configured maximum size by a few items.</para>
 		/// </remarks>
 		/// <exception cref="System.ObjectDisposedException">Thrown if this method is called on a disposed pool.</exception>
-		public void Expand(int increment)
-		{
-			ExceptionHelper.ThrowYoureDoingItWrong();
-		}
-
-		#endregion
-
-		#region Public Methods
-
-		/// <summary>
-		/// Throws a <see cref="ObjectDisposedException"/> if the <see cref="Dispose()"/> method has been called.
-		/// </summary>
-		protected void CheckDisposed()
+		public override void Expand(int increment)
 		{
 			ExceptionHelper.ThrowYoureDoingItWrong();
 		}
@@ -114,46 +102,12 @@ namespace PoolSharp
 		#region IDisposable & Related Implementation 
 
 		/// <summary>
-		/// Returns a boolean indicating if this pool is disposed or not.
-		/// </summary>
-		/// <seealso cref="Dispose()"/>
-		/// <seealso cref="Dispose(bool)"/>
-		public bool IsDisposed
-		{
-			get
-			{
-				ExceptionHelper.ThrowYoureDoingItWrong();
-				return false;
-			}
-		}
-
-		/// <summary>
-		/// Disposes this pool and all contained objects (if they are disposable).
-		/// </summary>
-		/// <remarks>
-		/// <para>A pool can only be disposed once, calling this method multiple times will have no effect after the first invocation.</para>
-		/// </remarks>
-		/// <seealso cref="IsDisposed"/>
-		/// <seealso cref="Dispose(bool)"/>
-		public void Dispose()
-		{
-			try
-			{
-				Dispose(true);
-			}
-			finally
-			{
-				GC.SuppressFinalize(this);
-			}
-		}
-
-		/// <summary>
 		/// Performs dispose logic, can be overridden by derivded types.
 		/// </summary>
 		/// <param name="disposing">True if the pool is being explicitly disposed, false if it is being disposed from a finalizer.</param>
-		/// <seealso cref="Dispose()"/>
-		/// <seealso cref="IsDisposed"/>
-		protected virtual void Dispose(bool disposing)
+		/// <seealso cref="PoolBase{T}.Dispose()"/>
+		/// <seealso cref="PoolBase{T}.IsDisposed"/>
+		protected override void Dispose(bool disposing)
 		{
 			ExceptionHelper.ThrowYoureDoingItWrong();
 		}

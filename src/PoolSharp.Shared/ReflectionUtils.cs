@@ -35,6 +35,7 @@ namespace PoolSharp
 		}
 #endif
 
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
 		internal static bool Contains<T>(this T[] items, T item)
 		{
 			if (items == null) return false;

@@ -16,6 +16,5 @@
     <Compile Include="$(MSBuildThisFileDirectory)PooledObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PoolPolicy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ReflectionUtils.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UnsynchronizedPool.cs" />
   </ItemGroup>
 </Project>

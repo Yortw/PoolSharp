@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoolSharp.Bait", "PoolSharp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoolSharp.WinRT", "PoolSharp.WinRT\PoolSharp.WinRT.csproj", "{CBFC6A7B-BDA2-4B82-BB67-B826C67485C9}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "PoolSharp.Shared.ConcurrentBagImplementation", "PoolSharp.Shared.ConcurrentBagImplementation\PoolSharp.Shared.ConcurrentBagImplementation.shproj", "{608B4BB8-F156-4CAF-9438-10DDAAD4AC85}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "PoolSharp.Shared.Implementations", "PoolSharp.Shared.ConcurrentBagImplementation\PoolSharp.Shared.Implementations.shproj", "{608B4BB8-F156-4CAF-9438-10DDAAD4AC85}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoolSharp.Tests", "PoolSharp.Tests\PoolSharp.Tests.csproj", "{6F5405F4-9CF7-45D7-9412-9365D1207CBD}"
 EndProject
