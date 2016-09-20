@@ -15,6 +15,7 @@ namespace PoolSharp
 	/// <para>Disposing the pool will also dispose all objects currently in the pool, if they support <see cref="IDisposable"/>.</para>
 	/// <para>This pool does not support the <seealso cref="PooledItemInitialization.AsyncReturn"/> initialization policy option. If this option is specified the constructor will throw a <seealso cref="System.ArgumentException"/>.</para>
 	/// <para>This pool requires an explicit (non-zero) maximum size. Items are not automatically pre-allocated unless the <see cref="Expand()"/> method is called, but an internal array of the maximum size is created at construction time to avoid resizing later.</para>
+	/// <para>This pool is 'allocation light' compared to the default <see cref="Pool{T}"/> implementation, which while efficient for multi-threaded scenarios, 'allocates' on returning items to the pool.</para>
 	/// </remarks>
 	/// <typeparam name="T">The type of value being pooled. Must be a reference type.</typeparam>
 	/// <seealso cref="PoolPolicy{T}"/>
