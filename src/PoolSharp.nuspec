@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>PoolSharp</id>
-        <version>2.0.2</version>
+        <version>2.0.3</version>
         <title>PoolSharp</title>
         <authors>Yortw</authors>
         <owners>Troy Willmot</owners>
@@ -13,7 +13,7 @@
         <projectUrl>https://github.com/Yortw/PoolSharp</projectUrl>
         <summary />
         <tags>object pool sharp winrt uwp net40 ios android xamarin portable</tags>
-        <releaseNotes>Fix Nuget package to apply correct references for UWP projects.</releaseNotes>
+        <releaseNotes>New 'Unsynchronised' pool implementation.</releaseNotes>
     </metadata>
     <files>
         <file src="PoolSharp.Android\bin\Release\PoolSharp.dll" target="lib\MonoAndroid\PoolSharp.dll" />
