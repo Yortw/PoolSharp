@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Poolsharp by Yortw</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Poolsharp</h1>
+        <h2>PoolSharp is a simple, light weight, thread safe object pool.</h2>
+        <a href="https://github.com/Yortw/PoolSharp" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a id="poolsharp" class="anchor" href="#poolsharp" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>PoolSharp</h1>
+
+<h2>
+<a id="what-is-poolsharp-" class="anchor" href="#what-is-poolsharp-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>What is PoolSharp ?</h2>
+
+<p>PoolSharp is a simple, light weight, thread safe object pool.</p>
+
+<p>It also supports pooling of disposable types, managing the life time of pooled objects and performing early dispose when possible.
+Pool implementations implement a simple common interface, so they can be mocked or replaced with alternatives.</p>
+
+<p><a href="https://github.com/Yortw/PoolSharp/blob/master/LICENSE.md"><img src="https://img.shields.io/github/license/mashape/apistatus.svg" alt="GitHub license"></a> </p>
+
+<h2>
+<a id="supported-platforms" class="anchor" href="#supported-platforms" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Supported Platforms</h2>
+
+<p>Currently;</p>
+
+<ul>
+<li>.Net Framework 4.0+</li>
+<li>Xamarin.iOS</li>
+<li>Xamarin.Android</li>
+<li>WinRT (Windows Store Apps 8.1)</li>
+<li>UWP 10+ (Windows 10 Universal Programs)</li>
+</ul>
+
+<h2>
+<a id="build-status" class="anchor" href="#build-status" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Build Status</h2>
+
+<p><a href="https://ci.appveyor.com/project/Yortw/poolsharp"><img src="https://ci.appveyor.com/api/projects/status/88t4uo6hvxfiqbe0?svg=true" alt="Build status"></a></p>
+
+<h2>
+<a id="how-do-i-use-poolsharp" class="anchor" href="#how-do-i-use-poolsharp" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>How do I use PoolSharp?</h2>
+
+<p><em>We got your samples right here</em></p>
+
+<p>Install the Nuget package like this;</p>
+
+<div class="highlight highlight-source-powershell"><pre>    PM<span class="pl-k">&gt;</span> <span class="pl-c1">Install-Package</span> PoolSharp</pre></div>
+
+<p><a href="https://www.nuget.org/packages/PoolSharp/"><img src="https://buildstats.info/nuget/PoolSharp" alt="NuGet Badge"></a></p>
+
+<p>Or reference the PoolSharp.dll assembly that matches your app's platform.</p>
+
+<h3>
+<a id="creating-a-pool" class="anchor" href="#creating-a-pool" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Creating a Pool</h3>
+
+<p>Create a PoolPolicy instance to configure options and behaviour for the pool, T is the type of item being pooled.
+Create a new Pool instance passing the pool policy you created. Pool policies can be re-used across pools so long as the assigned Function and Action delegates are thread-safe.</p>
+
+<div class="highlight highlight-source-cs"><pre>
+    <span class="pl-k">using</span> <span class="pl-en">PoolSharp</span>;
+    <span class="pl-c">// Define a policy. This policy;</span>
+    <span class="pl-c">//  Is for a StringBuilder pool.</span>
+    <span class="pl-c">//  Synchronously resets the StringBuilder state when the item is returned to the pool.</span>
+    <span class="pl-c">//  Pools at most 10 instances</span>
+
+    <span class="pl-k">var</span> policy = <span class="pl-k">new</span> PoolPolicy&lt;System.Text.StringBuilder&gt;()
+    {
+        Factory = (poolInstance) =&gt; <span class="pl-k">new</span> System.Text.StringBuilder(),
+        InitializationPolicy = PooledItemInitialization.Return,
+        MaximumPoolSize = <span class="pl-c1">10</span>,
+        ReinitializeObject = (sb) =&gt; sb.Clear()
+    };
+</pre></div>
+
+<h3>
+<a id="using-a-pool" class="anchor" href="#using-a-pool" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Using a Pool</h3>
+
+<p>Use the Take method to retrieve an instance from the pool. Use the Add method to return an instance to the pool so it can be re-used.</p>
+
+<div class="highlight highlight-source-cs"><pre>    <span class="pl-c">//Retrieve an instance from the pool</span>
+    <span class="pl-k">var</span> stringbuilder = pool.Take();
+
+    <span class="pl-c">//Do something with the stringbuilder   </span>
+
+    <span class="pl-c">//Return the string builder to the pool</span>
+    pool.Add(stringbuilder);    </pre></div>
+
+<h4>
+<a id="using-a-pool-with-auto-return-semantics" class="anchor" href="#using-a-pool-with-auto-return-semantics" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Using a Pool with Auto-Return Semantics</h4>
+
+<p>Instead of creating a pool for your specific type, create the pool for PooledObject where T is the type you actually want.
+Then you can use auto-return like this;</p>
+
+<div class="highlight highlight-source-cs"><pre>    <span class="pl-c">//Retrieve an instance from the pool</span>
+    <span class="pl-k">using</span> (<span class="pl-k">var</span> pooledItem pool.Take())
+    {
+        <span class="pl-c">//pooledItem.Value is the object you actually want.</span>
+        <span class="pl-c">//If the pool is for tyhe type PooledObject&lt;System.Text.StringBuilder&gt; then</span>
+        <span class="pl-c">//you can access the string builder instance like this;</span>
+        pooledItem.Value.Append(<span class="pl-s"><span class="pl-pds">"</span>Some text to add to the builder<span class="pl-pds">"</span></span>);
+
+    } <span class="pl-c">// The item will automatically be returned to the pool here.</span></pre></div>
+
+<h2>
+<a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Contributing</h2>
+
+<p>Contributing is encouraged! Please submit pull requests, open issues etc. However, to ensure we end up with a good result and to make my life a little easier, could I please request that;</p>
+
+<ul>
+<li>All changes be made in a feature branch, not in master, and please don't submit PR's directly against master.</li>
+<li>Make sure any PR contains (well named) new and/or updated unit tests to prove the new feature or bug fix. Failing this, please include enough sample data/problem description that I can write the tests myself.</li>
+</ul>
+
+<p>Also, not required, but would be really great if;</p>
+
+<ul>
+<li>You could use tabs instead of spaces (and not argue about it).</li>
+<li>You could write the code in a similar style as what already exists. I'm not OCD about this so some deviation is fine, we all have different styles and I'm not suggesting mine is 'right', but it helps everybody 
+undertand and maintain the code base when it is at least mostly uniform.</li>
+</ul>
+
+<p>Thanks! I look forward to merging your awesomesauce.</p>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/Yortw/PoolSharp/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/Yortw/PoolSharp/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/Yortw/PoolSharp"></a> is maintained by <a href="https://github.com/Yortw">Yortw</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
