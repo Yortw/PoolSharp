@@ -11,6 +11,8 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AssemblyInfoCommon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IPool.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IRelativeSizedItemPool.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ISizedItemPool.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PoolBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PooledItemInitialization.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PooledObject.cs" />
