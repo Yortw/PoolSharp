@@ -7,15 +7,15 @@ using System.Linq;
 namespace PoolSharp
 {
 	/// <summary>
-	/// Base class providing code re-use among multiple pool implementations. Should not be used directly by calling code, instead use <see cref="IPool{T}"/> for references.
+	///  A non-blocking object pool for sized items, optimised for situations involving heavily concurrent access.
 	/// </summary>
-	/// <typeparam name="T">The type of value being pooled.</typeparam>
-	public abstract class PoolBase<T> : IPool<T>
+	/// <typeparam name="T"></typeparam>
+	public abstract class SizedItemPoolBase<T> : ISizedItemPool<T>
 	{
 
 		#region Fields
 
-		private readonly PoolPolicy<T> _PoolPolicy;
+		private readonly SizedItemPoolPolicy<T> _PoolPolicy;
 		private readonly bool _IsPooledTypeDisposable;
 		private readonly bool _IsPooledTypeWrapped;
 		private PropertyInfo _PooledObjectValueProperty;
@@ -29,13 +29,13 @@ namespace PoolSharp
 		/// <summary>
 		/// Full constructor.
 		/// </summary>
-		/// <param name="poolPolicy">A <seealso cref="PoolPolicy{T}"/> instance containing configuration information for the pool.</param>
+		/// <param name="poolPolicy">A <seealso cref="SizedItemPoolPolicy{T}"/> instance containing configuration information for the pool.</param>
 		/// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="poolPolicy"/> argument is null.</exception>
-		/// <exception cref="System.ArgumentException">Thrown if the <see cref="PoolPolicy{T}.Factory"/> property of the <paramref name="poolPolicy"/> argument is null.</exception>
-		protected PoolBase(PoolPolicy<T> poolPolicy)
+		/// <exception cref="System.ArgumentException">Thrown if the <see cref="SizedItemPoolPolicy{T}.Factory"/> property of the <paramref name="poolPolicy"/> argument is null.</exception>
+		protected SizedItemPoolBase(SizedItemPoolPolicy<T> poolPolicy)
 		{
 			if (poolPolicy == null) throw new ArgumentNullException(nameof(poolPolicy));
-			if (poolPolicy.Factory == null) throw new ArgumentException("poolPolicy.Factory cannot be null");
+			if (poolPolicy.Factory == null) throw new ArgumentException("poolPolicy.Factory cannot be null", nameof(poolPolicy));
 
 			_IsPooledTypeWrapped = ReflectionUtils.IsTypeWrapped(typeof(T));
 			_IsPooledTypeDisposable = ReflectionUtils.IsTypeDisposable(typeof(T), _IsPooledTypeWrapped);
@@ -108,10 +108,10 @@ namespace PoolSharp
 		#region Public Properties
 
 		/// <summary>
-		/// Provides access to the <see cref="PoolPolicy"/> passed in the constructor.
+		/// Provides access to the <see cref="SizedItemPoolPolicy{T}"/> passed in the constructor.
 		/// </summary>
-		/// <seealso cref="PoolBase{T}"/>
-		protected PoolPolicy<T> PoolPolicy
+		/// <seealso cref="SizedItemPoolBase{T}"/>
+		protected SizedItemPoolPolicy<T> PoolPolicy
 		{
 			get
 			{
@@ -207,8 +207,19 @@ namespace PoolSharp
 		/// <summary>
 		/// Abstract method for retrieving an item from the pool. 
 		/// </summary>
+		/// <remarks>
+		/// <para>Behaviour of this inherited method is not explicitly defined but the recommended behaviour is to return either an item of the largest allowed size, 
+		/// or an item of 'average' (mode) size (the maximum size most often required).</para>
+		/// </remarks>
 		/// <returns>An instance of {T}.</returns>
 		public abstract T Take();
+
+		/// <summary>
+		/// Abstract method for retrieving an item from the pool that is at least the minimum size specififed. 
+		/// </summary>
+		/// <param name="minimumSize">The minimum size of the item to be retrieved.</param>
+		/// <returns>A instance of {T} that is *at least* the size specified by <paramref name="minimumSize"/>.</returns>
+		public abstract T Take(int minimumSize);
 
 		#endregion
 

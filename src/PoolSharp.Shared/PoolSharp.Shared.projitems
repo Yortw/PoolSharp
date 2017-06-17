@@ -16,6 +16,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)PoolBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PooledItemInitialization.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PooledObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SizedItemPoolBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SizedItemPoolPolicy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PoolPolicy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ReflectionUtils.cs" />
   </ItemGroup>
