@@ -11,6 +11,7 @@
     <RootNamespace>PoolSharp</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
     <AssemblyName>PoolSharp</AssemblyName>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -21,7 +22,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>..\PoolSharpAnalysis.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>bin\Debug\PoolSharp.XML</DocumentationFile>
   </PropertyGroup>
@@ -32,13 +32,13 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
     <CodeAnalysisRuleSet>..\PoolSharpAnalysis.ruleset</CodeAnalysisRuleSet>
     <DefineConstants>CODE_ANALYSIS;__UNIFIED__;__MOBILE__;__IOS__;CODE_ANALYSIS;__UNIFIED__;__MOBILE__;__IOS__;SUPPORTS_THREADS;SUPPORTS_AGGRESSIVEINLINING</DefineConstants>
     <DocumentationFile>bin\Release\PoolSharp.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'AppStore|AnyCPU'">
-    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
     <CodeAnalysisRuleSet>..\..\PoolNetAnalysis.ruleset</CodeAnalysisRuleSet>
     <DefineConstants>CODE_ANALYSIS;__UNIFIED__;__MOBILE__;__IOS__;SUPPORTS_THREADS</DefineConstants>
   </PropertyGroup>
@@ -52,6 +52,7 @@
     <Folder Include="Resources\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="..\PoolSharp.Shared\PoolSharp.Shared.projitems" Label="Shared" />

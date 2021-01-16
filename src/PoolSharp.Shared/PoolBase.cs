@@ -24,6 +24,19 @@ namespace PoolSharp
 
 		#endregion
 
+		#region Events
+
+		/// <summary>
+		/// Raised if an error is thrown by the <see cref="PoolPolicy{T}.ReinitializeObject"/> callback.
+		/// </summary>
+		/// <remarks>
+		/// <para>This event is raised when an exception is thrown during reinitialisation of an object as this may occur on a background thread where the caller 
+		/// otherwise couldn't catch and handle the exception. If this event is raised, the item was being reinitialised is not added to the pool.</para>
+		/// </remarks>
+		public event EventHandler<ReinitialiseErrorEventArgs<T>> ReinitialiseError;
+
+		#endregion
+
 		#region Constructors
 
 		/// <summary>
@@ -145,6 +158,15 @@ namespace PoolSharp
 
 		#region Public Methods
 
+		/// <summary>
+		/// Raises the <see cref="ReinitialiseError"/> event.
+		/// </summary>
+		/// <param name="e">The event arguments to pass to handlers of the event.</param>
+		protected virtual void OnReinitialiseError(ReinitialiseErrorEventArgs<T> e)
+		{
+			ReinitialiseError?.Invoke(this, e);
+		}
+
 #if NETFX_CORE
 		/// <summary>
 		/// Disposes <paramref name="pooledObject"/> if it is not null and supports <see cref="IDisposable"/>, otherwise does nothing. If <paramref name="pooledObject"/> is actually a <see cref="PooledObject{T}"/> instance, then disposes the <see cref="PooledObject{T}.Value"/> property instead.
@@ -168,7 +190,6 @@ namespace PoolSharp
 		/// Disposes <paramref name="pooledObject"/> if it is not null and supports <see cref="IDisposable"/>, otherwise does nothing. If <paramref name="pooledObject"/> is actually a <see cref="PooledObject{T}"/> instance, then disposes the <see cref="PooledObject{T}.Value"/> property instead.
 		/// </summary>
 		/// <param name="pooledObject"></param>
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "object")]
 		protected void SafeDispose(object pooledObject)
 		{
 			if (IsPooledTypeWrapped)

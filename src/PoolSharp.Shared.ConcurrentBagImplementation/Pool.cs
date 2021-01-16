@@ -32,7 +32,7 @@ namespace PoolSharp
 		private long _PoolInstancesCount;
 
 #if SUPPORTS_THREADS
-				System.Threading.Thread _ReinitialiseThread; 
+				System.Threading.Thread _ReinitialiseThread;
 #endif
 
 		#endregion
@@ -225,10 +225,19 @@ namespace PoolSharp
 						SafeDispose(item);
 					else
 					{
-						if (PoolPolicy.ReinitializeObject != null)
-							PoolPolicy.ReinitializeObject(item);
+						try
+						{
+							if (PoolPolicy.ReinitializeObject != null)
+								PoolPolicy.ReinitializeObject(item);
+						}
+						catch (Exception ex)
+						{
+							OnReinitialiseError(new ReinitialiseErrorEventArgs<T>(ex, item));
+							SafeDispose(item);
+							item = default;
+						}
 
-						if (ShouldReturnToPool(item))
+						if (item != null && ShouldReturnToPool(item))
 						{
 							_Pool.Add(item);
 
@@ -274,7 +283,17 @@ namespace PoolSharp
 		{
 			if (ShouldReturnToPool(value))
 			{
-				PoolPolicy.ReinitializeObject(value);
+				try
+				{
+					PoolPolicy.ReinitializeObject(value);
+				}
+				catch (Exception ex)
+				{
+					OnReinitialiseError(new ReinitialiseErrorEventArgs<T>(ex, value));
+					SafeDispose(value);
+					return;
+				}
+
 				_Pool.Add(value);
 				Interlocked.Increment(ref _PoolInstancesCount);
 			}

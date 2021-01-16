@@ -66,6 +66,15 @@
             </summary>
             <typeparam name="T">The type of value being pooled.</typeparam>
         </member>
+        <member name="E:PoolSharp.PoolBase`1.ReinitialiseError">
+            <summary>
+            Raised if an error is thrown by the <see cref="P:PoolSharp.PoolPolicy`1.ReinitializeObject"/> callback.
+            </summary>
+            <remarks>
+            <para>This event is raised when an exception is thrown during reinitialisation of an object as this may occur on a background thread where the caller 
+            otherwise couldn't catch and handle the exception. If this event is raised, the item was being reinitialised is not added to the pool.</para>
+            </remarks>
+        </member>
         <member name="M:PoolSharp.PoolBase`1.#ctor(PoolSharp.PoolPolicy{`0})">
             <summary>
             Full constructor.
@@ -122,6 +131,12 @@
             <summary>
             Returns a boolean indicating if {T} is actually a <seealso cref="T:PoolSharp.PooledObject`1"/>.
             </summary>
+        </member>
+        <member name="M:PoolSharp.PoolBase`1.OnReinitialiseError(PoolSharp.ReinitialiseErrorEventArgs{`0})">
+            <summary>
+            Raises the <see cref="E:PoolSharp.PoolBase`1.ReinitialiseError"/> event.
+            </summary>
+            <param name="e">The event arguments to pass to handlers of the event.</param>
         </member>
         <member name="M:PoolSharp.PoolBase`1.SafeDispose(System.Object)">
             <summary>
@@ -256,6 +271,29 @@
             <para>Enabling this feature may significantly impact performance and increase allocations, it should only be enabled in debug or test builds and only when a problem is suspected.</para>
             <para>If enabled the <see cref="M:PoolSharp.IPool`1.Add(`0)"/> function will throw if an item already in the pool as added a second time.</para>
             </remarks>
+        </member>
+        <member name="T:PoolSharp.ReinitialiseErrorEventArgs`1">
+            <summary>
+            Event arguments for the <see cref="E:PoolSharp.PoolBase`1.ReinitialiseError"/> event.
+            </summary>
+            <typeparam name="T">The type of value stored in the pool and being reinitialised.</typeparam>
+        </member>
+        <member name="M:PoolSharp.ReinitialiseErrorEventArgs`1.#ctor(System.Exception,`0)">
+            <summary>
+            Full constructor.
+            </summary>
+            <param name="exception">The exception that was thrown from the reinitialisation callback.</param>
+            <param name="item">The item that was being reinitialised when the exception were thrown.</param>
+        </member>
+        <member name="P:PoolSharp.ReinitialiseErrorEventArgs`1.Exception">
+            <summary>
+            The exception that was thrown from the reinitialisation callback.
+            </summary>
+        </member>
+        <member name="P:PoolSharp.ReinitialiseErrorEventArgs`1.Item">
+            <summary>
+            The item that was being reinitialised when the exception were thrown.
+            </summary>
         </member>
         <member name="T:PoolSharp.Pool`1">
             <summary>
