@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>PoolSharp</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>C:\Projects\GitHub\PoolSharp\src\PoolSharp.NetStandard20\PoolSharp.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <Import Project="..\PoolSharp.Shared\PoolSharp.Shared.projitems" Label="Shared" />
+
+  <Import Project="..\PoolSharp.Shared.ConcurrentBagImplementation\PoolSharp.Shared.ConcurrentBagImplementation.projitems" Label="Shared" />
+
+</Project>

@@ -34,7 +34,7 @@
     <ConsolePause>false</ConsolePause>
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>..\PoolSharpAnalysis.ruleset</CodeAnalysisRuleSet>
-    <DefineConstants>CODE_ANALYSIS;__UNIFIED__;__MOBILE__;__IOS__;SUPPORTS_THREADS</DefineConstants>
+    <DefineConstants>CODE_ANALYSIS;__UNIFIED__;__MOBILE__;__IOS__;CODE_ANALYSIS;__UNIFIED__;__MOBILE__;__IOS__;SUPPORTS_THREADS;SUPPORTS_AGGRESSIVEINLINING</DefineConstants>
     <DocumentationFile>bin\Release\PoolSharp.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'AppStore|AnyCPU'">

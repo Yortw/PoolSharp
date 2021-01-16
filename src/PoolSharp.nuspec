@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>PoolSharp</id>
-        <version>2.0.3</version>
+        <version>3.0.0</version>
         <title>PoolSharp</title>
         <authors>Yortw</authors>
         <owners>Troy Willmot</owners>
@@ -13,7 +13,7 @@
         <projectUrl>https://github.com/Yortw/PoolSharp</projectUrl>
         <summary />
         <tags>object pool sharp winrt uwp net40 ios android xamarin portable</tags>
-        <releaseNotes>New 'Unsynchronised' pool implementation.</releaseNotes>
+        <releaseNotes>Removed WinRT support. Added NetStandard 2.0 support.</releaseNotes>
     </metadata>
     <files>
         <file src="PoolSharp.Android\bin\Release\PoolSharp.dll" target="lib\MonoAndroid\PoolSharp.dll" />
@@ -25,11 +25,11 @@
         <file src="PoolSharp.WinRT\bin\Release\PoolSharp.dll" target="lib\netcore451\PoolSharp.dll" />
         <file src="PoolSharp.WinRT\bin\Release\PoolSharp.pdb" target="lib\netcore451\PoolSharp.pdb" />
         <file src="PoolSharp.WinRT\bin\Release\PoolSharp.XML" target="lib\netcore451\PoolSharp.XML" />
-        <file src="PoolSharp.Bait\bin\Release\PoolSharp.dll" target="lib\portable-net40+sl5+win8+wpa81+wp8\PoolSharp.dll" />
-        <file src="PoolSharp.Bait\bin\Release\PoolSharp.pdb" target="lib\portable-net40+sl5+win8+wpa81+wp8\PoolSharp.pdb" />
-        <file src="PoolSharp.Bait\bin\Release\PoolSharp.XML" target="lib\portable-net40+sl5+win8+wpa81+wp8\PoolSharp.XML" />
         <file src="PoolSharp.iOS\bin\Release\PoolSharp.dll" target="lib\Xamarin.iOS10\PoolSharp.dll" />
         <file src="PoolSharp.iOS\bin\Release\PoolSharp.pdb" target="lib\Xamarin.iOS10\PoolSharp.pdb" />
         <file src="PoolSharp.iOS\bin\Release\PoolSharp.XML" target="lib\Xamarin.iOS10\PoolSharp.XML" />
+        <file src="PoolSharp.NetStandard20\bin\Release\netstandard2.0\PoolSharp.dll" target="lib\netstandard2.0\PoolSharp.dll" />
+        <file src="PoolSharp.NetStandard20\bin\Release\netstandard2.0\PoolSharp.pdb" target="lib\netstandard2.0\PoolSharp.pdb" />
+        <file src="PoolSharp.NetStandard20\bin\Release\netstandard2.0\PoolSharp.XML" target="lib\netstandard2.0\PoolSharp.XML" />
     </files>
 </package>

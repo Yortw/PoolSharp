@@ -1,0 +1,411 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PoolSharp</name>
+    </assembly>
+    <members>
+        <member name="T:PoolSharp.IPool`1">
+            <summary>
+            Interface for a simple object pool.
+            </summary>
+            <typeparam name="T">The type of value being pooled.</typeparam>
+            <seealso cref="T:PoolSharp.Pool`1"/>
+            <seealso cref="T:PoolSharp.PooledObject`1"/>
+            <seealso cref="T:PoolSharp.PoolPolicy`1"/>
+        </member>
+        <member name="M:PoolSharp.IPool`1.Take">
+            <summary>
+            Gets an item from the pool.
+            </summary>
+            <remarks>
+            <para>If the pool is empty when the request is made, a new item is instantiated and returned.</para>
+            </remarks>
+            <returns>Returns an instance of {T} from the pool, or a new instance if the pool is empty.</returns>
+        </member>
+        <member name="M:PoolSharp.IPool`1.Add(`0)">
+            <summary>
+            Returns/adds an object to the pool so it can be reused.
+            </summary>
+            <param name="value"></param>
+            <remarks>
+            <para>Items will be returned to the pool if it is not full and the item is not already in the pool, otherwise no action is taken and no error is reported.</para>
+            <para>If the policy for the pool specifies <see cref="F:PoolSharp.PooledItemInitialization.AsyncReturn"/> the item will be queued for re-intialisation on a background thread before being returned to the pool, control will return to the caller once the item has been queued even if it has not yet been fully re-initialised and returned to the pool.</para>
+            <para>If the item is NOT returned to the pool, and {T} implements <see cref="T:System.IDisposable"/>, the instance will be disposed before the method returns.</para>
+            </remarks>
+            <exception cref="T:System.ArgumentNullException">Thrown if the <paramref name="value"/> is null.</exception>
+        </member>
+        <member name="M:PoolSharp.IPool`1.Expand">
+            <summary>
+            Creates new items and adds them to the pool up to it's maximum capacity.
+            </summary>
+            <remarks>
+            <para>This method is 'thread safe', though it is possible under certain race conditons for the pool to go beyond it's configured maximum size by a few items.</para>
+            <para>If the maximum pool size is set to zero or less (meaning no limit) then the method returns without doing anything, no instances are added to the pool.</para>
+            </remarks>
+            <exception cref="T:System.ObjectDisposedException">Thrown if this method is called on a disposed pool.</exception>
+        </member>
+        <member name="M:PoolSharp.IPool`1.Expand(System.Int32)">
+            <summary>
+            Creates as many new items as specified by <paramref name="increment"/> and adds them to the pool, but not over it's maximum capacity.
+            </summary>
+            <param name="increment">The maximum number of items to pre-allocate and add to the pool.</param>
+            <remarks>
+            <para>This method is 'thread safe', though it is possible under certain race conditons for the pool to go beyond it's configured maximum size by a few items.</para>
+            <para>If <paramref name="increment"/> is zero or less the method returns without doing anything</para>
+            </remarks>
+            <exception cref="T:System.ObjectDisposedException">Thrown if this method is called on a disposed pool.</exception>
+        </member>
+        <member name="P:PoolSharp.IPool`1.IsDisposed">
+            <summary>
+            Returns true of the <see cref="M:System.IDisposable.Dispose"/> method has been called on this instance.
+            </summary>
+        </member>
+        <member name="T:PoolSharp.PoolBase`1">
+            <summary>
+            Base class providing code re-use among multiple pool implementations. Should not be used directly by calling code, instead use <see cref="T:PoolSharp.IPool`1"/> for references.
+            </summary>
+            <typeparam name="T">The type of value being pooled.</typeparam>
+        </member>
+        <member name="M:PoolSharp.PoolBase`1.#ctor(PoolSharp.PoolPolicy{`0})">
+            <summary>
+            Full constructor.
+            </summary>
+            <param name="poolPolicy">A <seealso cref="T:PoolSharp.PoolPolicy`1"/> instance containing configuration information for the pool.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown if the <paramref name="poolPolicy"/> argument is null.</exception>
+            <exception cref="T:System.ArgumentException">Thrown if the <see cref="P:PoolSharp.PoolPolicy`1.Factory"/> property of the <paramref name="poolPolicy"/> argument is null.</exception>
+        </member>
+        <member name="P:PoolSharp.PoolBase`1.IsDisposed">
+            <summary>
+            Disposes this pool and all contained objects (if they are disposable).
+            </summary>
+            <remarks>
+            <para>A pool can only be disposed once, calling this method multiple times will have no effect after the first invocation.</para>
+            </remarks>
+            <seealso cref="P:PoolSharp.PoolBase`1.IsDisposed"/>
+            <seealso cref="M:PoolSharp.PoolBase`1.Dispose(System.Boolean)"/>
+        </member>
+        <member name="M:PoolSharp.PoolBase`1.Dispose">
+            <summary>
+            Disposes this pool and all contained objects (if they are disposable).
+            </summary>
+            <remarks>
+            <para>A pool can only be disposed once, calling this method multiple times will have no effect after the first invocation.</para>
+            </remarks>
+            <seealso cref="P:PoolSharp.PoolBase`1.IsDisposed"/>
+            <seealso cref="M:PoolSharp.PoolBase`1.Dispose(System.Boolean)"/>
+        </member>
+        <member name="M:PoolSharp.PoolBase`1.Dispose(System.Boolean)">
+            <summary>
+            Performs dispose logic, can be overridden by derivded types.
+            </summary>
+            <param name="disposing">True if the pool is being explicitly disposed, false if it is being disposed from a finalizer.</param>
+            <seealso cref="M:PoolSharp.PoolBase`1.Dispose"/>
+            <seealso cref="P:PoolSharp.PoolBase`1.IsDisposed"/>
+        </member>
+        <member name="M:PoolSharp.PoolBase`1.CheckDisposed">
+            <summary>
+            Throws a <see cref="T:System.ObjectDisposedException"/> if the <see cref="M:PoolSharp.PoolBase`1.Dispose"/> method has been called.
+            </summary>
+        </member>
+        <member name="P:PoolSharp.PoolBase`1.PoolPolicy">
+            <summary>
+            Provides access to the <see cref="P:PoolSharp.PoolBase`1.PoolPolicy"/> passed in the constructor.
+            </summary>
+            <seealso cref="T:PoolSharp.PoolBase`1"/>
+        </member>
+        <member name="P:PoolSharp.PoolBase`1.IsPooledTypeDisposable">
+            <summary>
+            Returns a boolean indicating if {T} is disposale.
+            </summary>
+        </member>
+        <member name="P:PoolSharp.PoolBase`1.IsPooledTypeWrapped">
+            <summary>
+            Returns a boolean indicating if {T} is actually a <seealso cref="T:PoolSharp.PooledObject`1"/>.
+            </summary>
+        </member>
+        <member name="M:PoolSharp.PoolBase`1.SafeDispose(System.Object)">
+            <summary>
+            Disposes <paramref name="pooledObject"/> if it is not null and supports <see cref="T:System.IDisposable"/>, otherwise does nothing. If <paramref name="pooledObject"/> is actually a <see cref="T:PoolSharp.PooledObject`1"/> instance, then disposes the <see cref="P:PoolSharp.PooledObject`1.Value"/> property instead.
+            </summary>
+            <param name="pooledObject"></param>
+        </member>
+        <member name="M:PoolSharp.PoolBase`1.Add(`0)">
+            <summary>
+            Abstract method for adding or returning an instance to the pool.
+            </summary>
+            <param name="value">The instance to add or return to the pool.</param>
+        </member>
+        <member name="M:PoolSharp.PoolBase`1.Expand">
+            <summary>
+            Abstract method for filling the pool up to it's maximum size with pre-pooled instances.
+            </summary>
+        </member>
+        <member name="M:PoolSharp.PoolBase`1.Expand(System.Int32)">
+            <summary>
+            Abstract method for adding a specified number of pre-pooled instances.
+            </summary>
+            <param name="increment">The number of instances to add to the pool.</param>
+        </member>
+        <member name="M:PoolSharp.PoolBase`1.Take">
+            <summary>
+            Abstract method for retrieving an item from the pool. 
+            </summary>
+            <returns>An instance of {T}.</returns>
+        </member>
+        <member name="T:PoolSharp.PooledItemInitialization">
+            <summary>
+            Provides options for when and how pooled items are re-initialised before reuse.
+            </summary>
+            <seealso cref="T:PoolSharp.PoolPolicy`1"/>
+        </member>
+        <member name="F:PoolSharp.PooledItemInitialization.Return">
+            <summary>
+            Default. Items are re-initialised synchronously when returned to the pool. Reduces latency on operations requesting items from the pool, while ensuring items in the pool are not holding references that would be cleared by re-initialisation. Additionally this may return items to the pool faster than <see cref="F:PoolSharp.PooledItemInitialization.AsyncReturn"/> as more than one thread can perform re-initialisation of independent values at a time, and this in turn may reduce allocations in busy pools.
+            </summary>
+        </member>
+        <member name="F:PoolSharp.PooledItemInitialization.AsyncReturn">
+            <summary>
+            <para>Items are re-initialised asynchronously before being returned to the pool. A single long running thread is used to re-initialise items before returning them to the pool. The use of a single thread prevents thread pool overloading when many/very busy pools are used, though can mean re-initialisation and returning items to the pool can take longer as the re-initialisation is effectively serialised.</para>
+            <para>This minimises time spent waiting on the pool either taking or returning items, but risks more allocations if items are requested from the pool while returned items are still being re-initialised. Recommended if re-initalisation is time consuming.</para>
+            <para>Note: On platforms (such as WinRT/UWP) where threads are not exposed by .Net runtime and only <see cref="T:System.Threading.Tasks.Task"/> is available, this effectively consumes a threadpool thread for the life of each pool (or slighlty longer). On those platforms we recommend using another option unless you have specific reason to use this one, particularly if you have many different pools in use.</para>
+            </summary>
+        </member>
+        <member name="F:PoolSharp.PooledItemInitialization.Take">
+            <summary>
+            <para>Items are re-initialised as they are retrieved from the pool. This can impose a performance penalty retrieving an item from the pool, but reduces the chance of a new allocation due to the pool being empty. Recommended if re-initialisation is fast.</para>
+            </summary>
+        </member>
+        <member name="T:PoolSharp.PooledObject`1">
+            <summary>
+            A wrapper for a pooled object that allows for easily retrieving and returning the item to the pool via the using statement.
+            </summary>
+            <remarks>
+            <para>In order to make a pool more convenient to use, the pool can contain <see cref="T:PoolSharp.PooledObject`1"/> references instead of direct {T} references.</para>
+            <para>When <see cref="M:PoolSharp.PooledObject`1.Dispose"/> is called on a <see cref="T:PoolSharp.PooledObject`1"/> instance, it is returned to the associated pool automatically.</para>
+            <code>
+            using (var wrapper = _Pool.Take())
+            {
+            	DoSomethingWithValue(wrapper.Value);
+            } // Wrapper and it's value will be returned to the pool here.
+            </code>
+            </remarks>
+            <typeparam name="T">The type of value being pooled.</typeparam>
+        </member>
+        <member name="M:PoolSharp.PooledObject`1.#ctor(PoolSharp.IPool{PoolSharp.PooledObject{`0}},`0)">
+            <summary>
+            Full constructor.
+            </summary>
+            <param name="pool">A reference to the pool the wrapper should be returned to when <see cref="M:PoolSharp.PooledObject`1.Dispose"/> is called.</param>
+            <param name="value">The actual value of interest to the caller.</param>
+        </member>
+        <member name="P:PoolSharp.PooledObject`1.Value">
+            <summary>
+            The actual value of interest.
+            </summary>
+        </member>
+        <member name="M:PoolSharp.PooledObject`1.Dispose">
+            <summary>
+            Rather than disposing the wrapper or the <see cref="P:PoolSharp.PooledObject`1.Value"/>, returns the wrapper to the pool specified in the wrapper's constructor.
+            </summary>
+        </member>
+        <member name="T:PoolSharp.PoolPolicy`1">
+            <summary>
+            Provides configuration controlling how an object pool works.
+            </summary>
+            <typeparam name="T">The type of item being pooled.</typeparam>
+            <seealso cref="T:PoolSharp.PooledItemInitialization"/>
+            <seealso cref="T:PoolSharp.Pool`1"/>
+        </member>
+        <member name="P:PoolSharp.PoolPolicy`1.Factory">
+            <summary>
+            A function that returns a new item for the pool. Used when the pool is empty and a new item is requested.
+            </summary>
+            <remarks>
+            <para>Should return a new, clean item, ready for use by the caller. Takes a single argument being a reference to the pool that was asked for the object, useful if you're creating <see cref="T:PoolSharp.PooledObject`1"/> instances.</para>
+            <para>Cannot be null. If null when provided to a <see cref="T:PoolSharp.Pool`1"/> instance, an exception will be thrown.</para>
+            </remarks>
+        </member>
+        <member name="P:PoolSharp.PoolPolicy`1.ReinitializeObject">
+            <summary>
+            An action that re-initialises a pooled object (cleans up/resets object state) before it is reused by callers.
+            </summary>
+            <remarks>
+            <para>Can be null if no re-initialisation is required, or if the client is expected to perform it's own initialisation.</para>
+            <para>This action is not performed against newly created items, it is a *re*-initialisation, not an initialisation action.</para>
+            <para>The action proided may be called from a background thread. If the pooled object has thread affinity, invoking to the appropriate thread may be required within the action itself.</para>
+            </remarks>
+        </member>
+        <member name="P:PoolSharp.PoolPolicy`1.MaximumPoolSize">
+            <summary>
+            Determines the maximum number of items allowed in the pool. A value of zero indicates no explicit limit.
+            </summary>
+            <remarks>
+            <para>This restricts the number of instances stored in the pool at any given time, it does not represent the maximum number of items that may be generated or exist in memory at any given time. If the pool is empty and a new item is requested, a new instance will be created even if pool was previously full and all it's instances have been taken already.</para>
+            </remarks>
+        </member>
+        <member name="P:PoolSharp.PoolPolicy`1.InitializationPolicy">
+            <summary>
+            A value from the <see cref="T:PoolSharp.PooledItemInitialization"/> enum specifying when and how pooled items are re-initialised.
+            </summary>
+        </member>
+        <member name="P:PoolSharp.PoolPolicy`1.ErrorOnIncorrectUsage">
+            <summary>
+            If true the system will throw an <see cref="T:System.InvalidOperationException"/> when incorrect usage is detected. Normally this setting should be false (the default).
+            </summary>
+            <remarks>
+            <para>Enabling this feature may significantly impact performance and increase allocations, it should only be enabled in debug or test builds and only when a problem is suspected.</para>
+            <para>If enabled the <see cref="M:PoolSharp.IPool`1.Add(`0)"/> function will throw if an item already in the pool as added a second time.</para>
+            </remarks>
+        </member>
+        <member name="T:PoolSharp.Pool`1">
+            <summary>
+            A non-blocking object pool optimised for situations involving heavily concurrent access.
+            </summary>
+            <remarks>
+            <para>This pool does not block when a new item is requested and the pool is empty, instead a new will be allocated and returned.</para>
+            <para>By default the pool starts empty and items are allocated as needed. The <see cref="M:PoolSharp.Pool`1.Expand"/> method can be used to pre-load the pool if required.</para>
+            <para>Objects returned to the pool are added on a first come first serve basis. If the pool is full when an object is returned, it is ignored (and will be garbage collected if there are no other references to it). In this case, if the item implements <see cref="T:System.IDisposable"/> the pool will ensure the item is disposed before being 'ignored'.</para>
+            <para>The pool makes a best effort attempt to avoid going over the specified <see cref="P:PoolSharp.PoolPolicy`1.MaximumPoolSize"/>, but does not strictly enforce it. Under certain multi-threaded scenarios it's possible for a few items more than the maximum to be kept in the pool.</para>
+            <para>Disposing the pool will also dispose all objects currently in the pool, if they support <see cref="T:System.IDisposable"/>.</para>
+            </remarks>
+            <typeparam name="T">The type of value being pooled.</typeparam>
+            <seealso cref="T:PoolSharp.PoolPolicy`1"/>
+            <seealso cref="T:PoolSharp.IPool`1"/>
+            <seealso cref="T:PoolSharp.PooledObject`1"/>
+        </member>
+        <member name="M:PoolSharp.Pool`1.#ctor(PoolSharp.PoolPolicy{`0})">
+            <summary>
+            Full constructor.
+            </summary>
+            <param name="poolPolicy">A <seealso cref="T:PoolSharp.PoolPolicy`1"/> instance containing configuration information for the pool.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown if the <paramref name="poolPolicy"/> argument is null.</exception>
+            <exception cref="T:System.ArgumentException">Thrown if the <see cref="P:PoolSharp.PoolPolicy`1.Factory"/> property of the <paramref name="poolPolicy"/> argument is null.</exception>
+        </member>
+        <member name="M:PoolSharp.Pool`1.Take">
+            <summary>
+            Gets an item from the pool.
+            </summary>
+            <remarks>
+            <para>If the pool is empty when the request is made, a new item is instantiated and returned. Otherwise an instance from the pool will be used.</para>
+            <para>This method is thread safe.</para>
+            </remarks>
+            <returns>Returns an instance of {T} from the pool, or a new instance if the pool is empty.</returns>
+            <exception cref="T:System.ObjectDisposedException">Thrown if the pool has been disposed.</exception>
+        </member>
+        <member name="M:PoolSharp.Pool`1.Add(`0)">
+            <summary>
+            Returns/adds an object to the pool so it can be reused.
+            </summary>
+            <param name="value"></param>
+            <remarks>
+            <para>Items will be returned to the pool if it is not full, otherwise no action is taken and no error is reported.</para>
+            <para>If the policy for the pool specifies <see cref="F:PoolSharp.PooledItemInitialization.AsyncReturn"/> the item will be queued for re-intialisation on a background thread before being returned to the pool, control will return to the caller once the item has been queued even if it has not yet been fully re-initialised and returned to the pool.</para>
+            <para>If the item is NOT returned to the pool, and {T} implements <see cref="T:System.IDisposable"/>, the instance will be disposed before the method returns.</para>
+            <para>Calling this method on a disposed pool will dispose the returned item if it supports <see cref="T:System.IDisposable"/>, but takes no other action and throws no error.</para>
+            <para>This method is 'thread safe', though it is possible for multiple threads returning items at the same time to add items beyond the maximum pool size. This should be rare and have few ill effects. Over time the pool will likely return to it's normal size.</para>
+            </remarks>
+            <exception cref="T:System.ArgumentNullException">Thrown if the <paramref name="value"/> is null.</exception>
+            <exception cref="T:System.InvalidOperationException">Thrown if the <see cref="P:PoolSharp.PoolPolicy`1.ErrorOnIncorrectUsage"/> is true and the same instance already exists in the pool.</exception>
+        </member>
+        <member name="M:PoolSharp.Pool`1.Expand">
+            <summary>
+            Creates new items and adds them to the pool up to it's maximum capacity.
+            </summary>
+            <remarks>
+            <para>This method is 'thread safe', though it is possible under certain race conditons for the pool to go beyond it's configured maximum size by a few items.</para>
+            <para>If the maximum pool size is set to zero or less (meaning no limit) then the method returns without doing anything, no instances are added to the pool.</para>
+            </remarks>
+            <exception cref="T:System.ObjectDisposedException">Thrown if this method is called on a disposed pool.</exception>
+        </member>
+        <member name="M:PoolSharp.Pool`1.Expand(System.Int32)">
+            <summary>
+            Creates as many new items as specified by <paramref name="increment"/> and adds them to the pool, but not over it's maximum capacity.
+            </summary>
+            <param name="increment">The maximum number of items to pre-allocate and add to the pool.</param>
+            <remarks>
+            <para>This method is 'thread safe', though it is possible under certain race conditons for the pool to go beyond it's configured maximum size by a few items.</para>
+            <para>If <paramref name="increment"/> is zero or less the method returns without doing anything</para>
+            </remarks>
+            <exception cref="T:System.ObjectDisposedException">Thrown if this method is called on a disposed pool.</exception>
+        </member>
+        <member name="M:PoolSharp.Pool`1.Dispose(System.Boolean)">
+            <summary>
+            Performs dispose logic, can be overridden by derivded types.
+            </summary>
+            <param name="disposing">True if the pool is being explicitly disposed, false if it is being disposed from a finalizer.</param>
+            <seealso cref="M:PoolSharp.PoolBase`1.Dispose"/>
+            <seealso cref="P:PoolSharp.PoolBase`1.IsDisposed"/>
+        </member>
+        <member name="T:PoolSharp.UnsynchronizedPool`1">
+            <summary>
+            A pool implementation designed strictly for single-threaded access.
+            </summary>
+            <remarks>
+            <para>As this implementation does not use any synchronisation methods it provides best performance but is only safe when accessed by a single thread. It is ideal for single threaded scenarios such as game loops where only one thread access the pool, but a pool is still helpful.</para>
+            <para>This pool does not block when a new item is requested and the pool is empty, instead a new will be allocated and returned.</para>
+            <para>By default the pool starts empty and items are allocated as needed. The <see cref="M:PoolSharp.UnsynchronizedPool`1.Expand"/> method can be used to pre-load the pool if required.</para>
+            <para>Objects returned to the pool are added on a first come first serve basis. If the pool is full when an object is returned, it is ignored (and will be garbage collected if there are no other references to it). In this case, if the item implements <see cref="T:System.IDisposable"/> the pool will ensure the item is disposed before being 'ignored'.</para>
+            <para>Disposing the pool will also dispose all objects currently in the pool, if they support <see cref="T:System.IDisposable"/>.</para>
+            <para>This pool does not support the <seealso cref="F:PoolSharp.PooledItemInitialization.AsyncReturn"/> initialization policy option. If this option is specified the constructor will throw a <seealso cref="T:System.ArgumentException"/>.</para>
+            <para>This pool requires an explicit (non-zero) maximum size. Items are not automatically pre-allocated unless the <see cref="M:PoolSharp.UnsynchronizedPool`1.Expand"/> method is called, but an internal array of the maximum size is created at construction time to avoid resizing later.</para>
+            <para>This pool is 'allocation light' compared to the default <see cref="T:PoolSharp.Pool`1"/> implementation, which while efficient for multi-threaded scenarios, 'allocates' on returning items to the pool.</para>
+            </remarks>
+            <typeparam name="T">The type of value being pooled. Must be a reference type.</typeparam>
+            <seealso cref="T:PoolSharp.PoolPolicy`1"/>
+            <seealso cref="T:PoolSharp.IPool`1"/>
+            <seealso cref="T:PoolSharp.PooledObject`1"/>
+        </member>
+        <member name="M:PoolSharp.UnsynchronizedPool`1.#ctor(PoolSharp.PoolPolicy{`0})">
+            <summary>
+            Full constructor.
+            </summary>
+            <param name="poolPolicy">A <seealso cref="T:PoolSharp.PoolPolicy`1"/> instance containing configuration information for the pool.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown if the <paramref name="poolPolicy"/> argument is null.</exception>
+            <exception cref="T:System.ArgumentException">Thrown if the <see cref="P:PoolSharp.PoolPolicy`1.Factory"/> property of the <paramref name="poolPolicy"/> argument is null.</exception>
+            <exception cref="T:System.ArgumentException">Thrown if the <see cref="P:PoolSharp.PoolPolicy`1.InitializationPolicy"/> property is set to <see cref="F:PoolSharp.PooledItemInitialization.AsyncReturn"/>.</exception>
+            <exception cref="T:System.ArgumentException">Thrown if the <see cref="P:PoolSharp.PoolPolicy`1.MaximumPoolSize"/> property is less than or equal to zero.</exception>
+        </member>
+        <member name="M:PoolSharp.UnsynchronizedPool`1.Dispose(System.Boolean)">
+            <summary>
+            Performs dispose logic, can be overridden by derivded types.
+            </summary>
+            <param name="disposing">True if the pool is being explicitly disposed, false if it is being disposed from a finalizer.</param>
+            <seealso cref="M:PoolSharp.PoolBase`1.Dispose"/>
+            <seealso cref="P:PoolSharp.PoolBase`1.IsDisposed"/>
+        </member>
+        <member name="M:PoolSharp.UnsynchronizedPool`1.Add(`0)">
+            <summary>
+            Returns/adds an object to the pool so it can be reused.
+            </summary>
+            <param name="value"></param>
+            <remarks>
+            <para>Items will be returned to the pool if it is not full, otherwise no action is taken and no error is reported.</para>
+            <para>If the item is NOT returned to the pool, and {T} implements <see cref="T:System.IDisposable"/>, the instance will be disposed before the method returns.</para>
+            <para>Calling this method on a disposed pool will dispose the returned item if it supports <see cref="T:System.IDisposable"/>, but takes no other action and throws no error.</para>
+            </remarks>
+            <exception cref="T:System.ArgumentNullException">Thrown if the <paramref name="value"/> is null.</exception>
+            <exception cref="T:System.InvalidOperationException">Thrown if the <see cref="P:PoolSharp.PoolPolicy`1.ErrorOnIncorrectUsage"/> is true and the same instance already exists in the pool.</exception>
+        </member>
+        <member name="M:PoolSharp.UnsynchronizedPool`1.Expand">
+            <summary>
+            Fills the pool up to it's maximum size with pre-generated instances.
+            </summary>
+        </member>
+        <member name="M:PoolSharp.UnsynchronizedPool`1.Expand(System.Int32)">
+            <summary>
+            Expands the pool up by the <paramref name="increment"/> value, but not past it's maximum size, with pre-generated instances.
+            </summary>
+            <param name="increment"></param>
+        </member>
+        <member name="M:PoolSharp.UnsynchronizedPool`1.Take">
+            <summary>
+            Gets an item from the pool.
+            </summary>
+            <remarks>
+            <para>If the pool is empty when the request is made, a new item is instantiated and returned. Otherwise an instance from the pool will be used.</para>
+            </remarks>
+            <returns>Returns an instance of {T} from the pool, or a new instance if the pool is empty.</returns>
+            <exception cref="T:System.ObjectDisposedException">Thrown if the pool has been disposed.</exception>
+        </member>
+    </members>
+</doc>
