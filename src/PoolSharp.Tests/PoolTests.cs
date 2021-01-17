@@ -84,7 +84,7 @@ namespace PoolSharp.Tests
 		{
 			var pool = GetPool(1, PooledItemInitialization.Take);
 			pool.Dispose();
-			var item = pool.Take();
+			_ = pool.Take();
 		}
 
 		#endregion
@@ -363,6 +363,92 @@ namespace PoolSharp.Tests
 
 			Assert.AreEqual((object)item2.Value, (object)itemRef.Value);
 			Assert.AreNotEqual(item2.Value.Id, itemId);
+		}
+
+		#endregion
+
+		#region Reinitialise Error Handling Tests
+
+		[TestMethod]
+		public void PooledObject_BackgroundReinitialise_RasisesEvent_OnReinitialiseError()
+		{
+			var policy = new PoolPolicy<PooledObject<DisposableTestPoolItem>>()
+			{
+				Factory = (p) => new PooledObject<DisposableTestPoolItem>(p, new DisposableTestPoolItem()),
+				InitializationPolicy = PooledItemInitialization.AsyncReturn,
+				MaximumPoolSize = 1,
+				ReinitializeObject = (item) =>
+				{
+					throw new OutOfMemoryException("Test");
+				}
+			};
+
+			var eventRaised = false;
+			using (var eventRaisedSignal = new System.Threading.ManualResetEvent(false))
+			{
+				var pool = new Pool<PooledObject<DisposableTestPoolItem>>(policy);
+				pool.ReinitialiseError += (s, e) => { eventRaised = true; eventRaisedSignal.Set(); };
+
+				var item = pool.Take();
+				pool.Add(item);
+				eventRaisedSignal.WaitOne(1000);
+				Assert.IsTrue(eventRaised);
+			}
+		}
+
+		[TestMethod]
+		public void PooledObject_ReinitialiseOnReturn_RasisesEvent_OnReinitialiseError()
+		{
+			var policy = new PoolPolicy<PooledObject<DisposableTestPoolItem>>()
+			{
+				Factory = (p) => new PooledObject<DisposableTestPoolItem>(p, new DisposableTestPoolItem()),
+				InitializationPolicy = PooledItemInitialization.Return,
+				MaximumPoolSize = 1,
+				ReinitializeObject = (item) =>
+				{
+					throw new OutOfMemoryException("Test");
+				}
+			};
+
+			var eventRaised = false;
+			using (var eventRaisedSignal = new System.Threading.ManualResetEvent(false))
+			{
+				var pool = new Pool<PooledObject<DisposableTestPoolItem>>(policy);
+				pool.ReinitialiseError += (s, e) => { eventRaised = true; eventRaisedSignal.Set(); };
+
+				var item = pool.Take();
+				pool.Add(item);
+				eventRaisedSignal.WaitOne(1000);
+				Assert.IsTrue(eventRaised);
+			}
+		}
+
+		[TestMethod]
+		public void PooledObject_ReinitialiseOnTake_RasisesEvent_OnReinitialiseError()
+		{
+			var policy = new PoolPolicy<PooledObject<DisposableTestPoolItem>>()
+			{
+				Factory = (p) => new PooledObject<DisposableTestPoolItem>(p, new DisposableTestPoolItem()),
+				InitializationPolicy = PooledItemInitialization.Take,
+				MaximumPoolSize = 1,
+				ReinitializeObject = (item) =>
+				{
+					throw new OutOfMemoryException("Test");
+				}
+			};
+
+			var eventRaised = false;
+			using (var eventRaisedSignal = new System.Threading.ManualResetEvent(false))
+			{
+				var pool = new Pool<PooledObject<DisposableTestPoolItem>>(policy);
+				pool.ReinitialiseError += (s, e) => { eventRaised = true; eventRaisedSignal.Set(); };
+
+				var item = pool.Take();
+				pool.Add(item);
+				item = pool.Take();
+				eventRaisedSignal.WaitOne(1000);
+				Assert.IsTrue(eventRaised);
+			}
 		}
 
 		#endregion

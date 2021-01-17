@@ -32,7 +32,7 @@ namespace PoolSharp
 		private long _PoolInstancesCount;
 
 #if SUPPORTS_THREADS
-				System.Threading.Thread _ReinitialiseThread;
+		private readonly System.Threading.Thread _ReinitialiseThread;
 #endif
 
 		#endregion
@@ -53,9 +53,11 @@ namespace PoolSharp
 			{
 				_ItemsToInitialise = new System.Collections.Concurrent.BlockingCollection<T>();
 #if SUPPORTS_THREADS
-				_ReinitialiseThread = new System.Threading.Thread(this.BackgroundReinitialise);
-				_ReinitialiseThread.Name = this.GetType().FullName + " Background Reinitialise";
-				_ReinitialiseThread.IsBackground = true;
+				_ReinitialiseThread = new System.Threading.Thread(this.BackgroundReinitialise)
+				{
+					Name = this.GetType().FullName + " Background Reinitialise",
+					IsBackground = true
+				};
 				_ReinitialiseThread.Start();
 #else
 				System.Threading.Tasks.Task.Factory.StartNew(this.BackgroundReinitialise, System.Threading.Tasks.TaskCreationOptions.LongRunning);
@@ -80,14 +82,16 @@ namespace PoolSharp
 		{
 			CheckDisposed();
 
-			T retVal;
 
-			if (_Pool.TryTake(out retVal))
+			if (_Pool.TryTake(out var retVal))
 			{
 				Interlocked.Decrement(ref _PoolInstancesCount);
 
 				if (PoolPolicy.InitializationPolicy == PooledItemInitialization.Take && PoolPolicy.ReinitializeObject != null)
-					PoolPolicy.ReinitializeObject(retVal);
+				{
+					if (!ReinitialiseObject(retVal))
+						retVal = PoolPolicy.Factory(this);
+				}
 			}
 			else
 				retVal = PoolPolicy.Factory(this);
@@ -125,7 +129,9 @@ namespace PoolSharp
 				else
 				{
 					if (PoolPolicy.InitializationPolicy == PooledItemInitialization.Return && PoolPolicy.ReinitializeObject != null)
-						PoolPolicy.ReinitializeObject(value);
+					{
+						if (!ReinitialiseObject(value)) return;
+					}
 
 					_Pool.Add(value);
 					Interlocked.Increment(ref _PoolInstancesCount);
@@ -190,11 +196,9 @@ namespace PoolSharp
 
 				if (IsPooledTypeDisposable)
 				{
-					T item;
-
 					while (!_Pool.IsEmpty)
 					{
-						_Pool.TryTake(out item);
+						_Pool.TryTake(out var item);
 						SafeDispose(item);
 					}
 				}
@@ -207,7 +211,7 @@ namespace PoolSharp
 
 		private void BackgroundReinitialise()
 		{
-			T item = default(T);
+			T item = default;
 			while (!_ItemsToInitialise.IsCompleted)
 			{
 				try
@@ -225,19 +229,7 @@ namespace PoolSharp
 						SafeDispose(item);
 					else
 					{
-						try
-						{
-							if (PoolPolicy.ReinitializeObject != null)
-								PoolPolicy.ReinitializeObject(item);
-						}
-						catch (Exception ex)
-						{
-							OnReinitialiseError(new ReinitialiseErrorEventArgs<T>(ex, item));
-							SafeDispose(item);
-							item = default;
-						}
-
-						if (item != null && ShouldReturnToPool(item))
+						if (ReinitialiseObject(item) && ShouldReturnToPool(item))
 						{
 							_Pool.Add(item);
 
@@ -258,47 +250,19 @@ namespace PoolSharp
 			catch (InvalidOperationException) { } //Handle race condition on above if condition.
 		}
 
-		private void ProcessReturnedItems()
+		private bool ReinitialiseObject(T item)
 		{
-			//Only bother reinitialising items while we're alive.
-			//If we're shutdown, even with items left to process, then just ignore them.
-			//We're not going to use them anyway.
-			while (!_ItemsToInitialise.IsAddingCompleted)
+			try
 			{
-				ReinitialiseAndReturnToPoolOrDispose(_ItemsToInitialise.Take());
+				PoolPolicy.ReinitializeObject(item);
+				return true;
 			}
-
-			//If we're done but the there are disposable items in the queue,
-			//dispose each one.
-			if (!_ItemsToInitialise.IsCompleted && IsPooledTypeDisposable)
+			catch (Exception ex)
 			{
-				while (!_ItemsToInitialise.IsCompleted)
-				{
-					SafeDispose(_ItemsToInitialise.Take());
-				}
+				OnReinitialiseError(new ReinitialiseErrorEventArgs<T>(ex, item));
+				SafeDispose(item);
 			}
-		}
-
-		private void ReinitialiseAndReturnToPoolOrDispose(T value)
-		{
-			if (ShouldReturnToPool(value))
-			{
-				try
-				{
-					PoolPolicy.ReinitializeObject(value);
-				}
-				catch (Exception ex)
-				{
-					OnReinitialiseError(new ReinitialiseErrorEventArgs<T>(ex, value));
-					SafeDispose(value);
-					return;
-				}
-
-				_Pool.Add(value);
-				Interlocked.Increment(ref _PoolInstancesCount);
-			}
-			else
-				SafeDispose(value);
+			return false;
 		}
 
 		private bool ShouldReturnToPool(T pooledObject)
