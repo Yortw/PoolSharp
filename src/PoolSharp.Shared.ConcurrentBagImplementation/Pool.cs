@@ -222,6 +222,10 @@ namespace PoolSharp
 				{
 					if (_ItemsToInitialise.IsCompleted) return;
 				}
+				catch (Exception ex) when (ex is ArrayTypeMismatchException || ex is NullReferenceException) 
+				{
+					System.Threading.Thread.Sleep(100);
+				}
 
 				if (item != null)
 				{
@@ -236,6 +240,8 @@ namespace PoolSharp
 							Interlocked.Increment(ref _PoolInstancesCount);
 						}
 					}
+
+					item = default;
 				}
 			}
 		}

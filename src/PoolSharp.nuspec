@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>PoolSharp</id>
-        <version>3.0.0</version>
+        <version>3.0.1</version>
         <title>PoolSharp</title>
         <authors>Yortw</authors>
         <owners>Troy Willmot</owners>
@@ -13,7 +13,7 @@
         <projectUrl>https://github.com/Yortw/PoolSharp</projectUrl>
         <summary />
         <tags>object pool sharp winrt uwp net40 ios android xamarin portable</tags>
-        <releaseNotes>Removed WinRT support. Added NetStandard 2.0 support. Improved error handling during item reinitialisation.</releaseNotes>
+        <releaseNotes>Improved error handling during item reinitialisation, again.</releaseNotes>
     </metadata>
     <files>
         <file src="PoolSharp.Android\bin\Release\PoolSharp.dll" target="lib\MonoAndroid\PoolSharp.dll" />
